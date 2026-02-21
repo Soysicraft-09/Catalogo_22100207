@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<products>
+  <product>
+    <id>1</id>
+    <name>Tenis Running Pro</name>
+    <price>1899</price>
+    <imageUrl>https://picsum.photos/seed/tenis-running/640/360</imageUrl>
+    <category>Calzado</category>
+    <description>Tenis ligeros para correr con suela antiderrapante.</description>
+    <inStock>true</inStock>
+  </product>
+  <product>
+    <id>2</id>
+    <name>Sudadera Oversize</name>
+    <price>799</price>
+    <imageUrl>https://picsum.photos/seed/sudadera-oversize/640/360</imageUrl>
+    <category>Ropa</category>
+    <description>Sudadera de algodon afelpada, corte comodo unisex.</description>
+    <inStock>false</inStock>
+  </product>
+  <product>
+    <id>3</id>
+    <name>Playera Basica Blanca</name>
+    <price>299</price>
+    <imageUrl>https://picsum.photos/seed/playera-blanca/640/360</imageUrl>
+    <category>Ropa</category>
+    <description>Playera de cuello redondo, tela suave y fresca.</description>
+    <inStock>true</inStock>
+  </product>
+  <product>
+    <id>4</id>
+    <name>Jeans Slim Azul</name>
+    <price>999</price>
+    <imageUrl>https://picsum.photos/seed/jeans-slim/640/360</imageUrl>
+    <category>Ropa</category>
+    <description>Jeans elastico de ajuste slim para uso diario.</description>
+    <inStock>true</inStock>
+  </product>
+  <product>
+    <id>5</id>
+    <name>Tenis Urban Street</name>
+    <price>1499</price>
+    <imageUrl>https://picsum.photos/seed/tenis-urban/640/360</imageUrl>
+    <category>Calzado</category>
+    <description>Tenis casuales para ciudad con plantilla acolchada.</description>
+    <inStock>true</inStock>
+  </product>
+  <product>
+    <id>6</id>
+    <name>Chaqueta Rompevientos</name>
+    <price>1199</price>
+    <imageUrl>https://picsum.photos/seed/rompevientos/640/360</imageUrl>
+    <category>Ropa</category>
+    <description>Chaqueta ligera resistente al viento y salpicaduras.</description>
+    <inStock>false</inStock>
+  </product>
+</products>

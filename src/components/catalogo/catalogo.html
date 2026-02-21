@@ -1,0 +1,13 @@
+<header class="header">
+  <h1>Catalogo</h1>
+  <p>Total: {{ products.length }}</p>
+  @if (errorMessage) {
+    <p>{{ errorMessage }}</p>
+  }
+</header>
+
+<section class="grid">
+  @for (p of products; track p.id) {
+    <app-producto-card [product]="p"></app-producto-card>
+  }
+</section>
