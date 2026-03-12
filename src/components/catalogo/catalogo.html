@@ -1,13 +1,29 @@
+<!-- Encabezado del catalogo con resumen rapido y acceso al carrito. -->
 <header class="header">
-  <h1>Catalogo</h1>
-  <p>Total: {{ products.length }}</p>
-  @if (errorMessage) {
-    <p>{{ errorMessage }}</p>
-  }
+  <div>
+    <h1>Catalogo</h1>
+    <p>Productos en stock: {{ inStockCount() }}</p>
+  </div>
+
+  <!-- El badge se actualiza solo porque depende de una señal reactiva. -->
+  <a class="cart-link" routerLink="/carrito" aria-label="Ver carrito de compras">
+    <span>Ver carrito</span>
+    <span class="cart-badge" [attr.aria-label]="carritoCount() + ' productos en el carrito'">
+      {{ carritoCount() }}
+    </span>
+  </a>
 </header>
 
-<section class="grid">
-  @for (p of products; track p.id) {
-    <app-producto-card [product]="p"></app-producto-card>
-  }
-</section>
+<!-- Aqui voy cambiando la vista segun el estado de carga. -->
+@if (errorMessage()) {
+  <p class="status error">{{ errorMessage() }}</p>
+} @else if (products().length === 0) {
+  <p class="status">Cargando productos...</p>
+} @else {
+  <!-- Cuando ya estan los datos pone una tarjeta para cada producto. -->
+  <section class="grid">
+    @for (p of products(); track p.id) {
+      <app-producto-card [product]="p" (add)="agregar($event)"></app-producto-card>
+    }
+  </section>
+}

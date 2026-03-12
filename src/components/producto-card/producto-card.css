@@ -1,23 +1,29 @@
+/* Tarjeta base de cada producto. */
 .card {
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   overflow: hidden;
   background: #ffffff;
+  display: grid;
 }
 
+/* La imagen ocupa todo el ancho y mantiene una altura uniforme entre productos. */
 .img {
   width: 100%;
-  height: 170px;
-  object-fit: cover;
+  height: 260px;
+  object-fit: contain;
   display: block;
+  background: #f3f4f6;
 }
 
+/* El cuerpo separa visualmente nombre, descripcion, stock y boton. */
 .body {
   padding: 12px;
   display: grid;
   gap: 8px;
 }
 
+/* Arriba dejo nombre y precio alineados en la misma linea. */
 .top {
   display: flex;
   justify-content: space-between;
@@ -25,27 +31,32 @@
   align-items: baseline;
 }
 
+/* Titulo del producto. */
 .title {
   margin: 0;
   font-size: 16px;
 }
 
+/* El precio resalta un poco mas que el resto del texto. */
 .price {
   font-weight: 700;
 }
 
+/* Categoria con tono mas discreto. */
 .meta {
   margin: 0;
   color: #6b7280;
   font-size: 14px;
 }
 
+/* Descripcion principal del producto. */
 .desc {
   margin: 0;
   font-size: 14px;
   color: #374151;
 }
 
+/* Verde cuando el producto si se puede comprar. */
 .stock {
   margin: 0;
   font-size: 13px;
@@ -53,6 +64,25 @@
   color: #16a34a;
 }
 
+/* Cambio a rojo si el producto esta agotado. */
 .stock.out {
   color: #dc2626;
+}
+
+/* Boton principal para mandar el producto al carrito. */
+.btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #0f766e;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Si no hay stock, el boton comunica claramente que no esta disponible. */
+.btn:disabled {
+  background: #cbd5e1;
+  color: #475569;
+  cursor: not-allowed;
 }

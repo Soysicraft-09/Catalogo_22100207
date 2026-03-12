@@ -5,7 +5,9 @@ import { provideRouter } from '@angular/router';
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      // Importo el componente raiz tal como se usaria en la app real.
       imports: [App],
+      // El router vacio es suficiente para estas pruebas basicas.
       providers: [provideRouter([])],
     }).compileComponents();
   });

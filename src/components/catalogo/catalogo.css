@@ -1,13 +1,60 @@
+/* Acomoda el titulo y el acceso al carrito en una sola fila cuando hay espacio. */
 .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
   margin-bottom: 16px;
 }
 
+/* Quito margenes raros del navegador en el titulo principal. */
 h1 {
   margin: 0 0 6px;
 }
 
+/* Este boton lleva al carrito y tambien contiene el contador. */
+.cart-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: #0f766e;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* El badge es el numero que avisa cuantos productos van en el carrito. */
+.cart-badge {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  background: #ffffff;
+  color: #0f766e;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* La cuadricula reparte las tarjetas de forma adaptable segun el ancho. */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 16px;
+}
+
+/* Estilo base para mensajes de estado como carga o informacion. */
+.status {
+  margin: 0 0 16px;
+  color: #475569;
+}
+
+/* Cuando el estado representa un error, lo marco con rojo. */
+.status.error {
+  color: #b91c1c;
 }

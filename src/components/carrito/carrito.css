@@ -1,0 +1,98 @@
+/* Caja principal del carrito. */
+.cart {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+  background: #ffffff;
+}
+
+/* Cabecera (titulo y link) para volver al catalogo. */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+/* Titulo de la vista del carrito. */
+.title {
+  margin: 0;
+  font-size: 18px;
+}
+
+/* Boton para regresar sin usar el navegador. */
+.back-link {
+  text-decoration: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #0f766e;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Mensaje mostrado cuando no hay nada agregado. */
+.empty {
+  margin: 0;
+  color: #6b7280;
+}
+
+/* Lista visual del contenido del carrito. */
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+/* Cada renglon representa un producto agregado. */
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+/* Texto con nombre y precio del producto. */
+.line {
+  font-size: 14px;
+}
+
+/* Total acumulado del carrito. */
+.total {
+  margin-top: 12px;
+  font-weight: 700;
+}
+
+/* Agrupo las acciones para que bajen bien en pantallas pequeñas. */
+.actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Estilo base compartido por los botones del carrito. */
+.btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+/* Rojo para acciones destructivas. */
+.btn.danger {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+/* Verde para la accion de exportar. */
+.btn.accent {
+  background: #0f766e;
+  color: #ffffff;
+}

@@ -1,0 +1,37 @@
+<section class="cart">
+  <div class="header">
+    <h2 class="title">Carrito</h2>
+    <a class="back-link" routerLink="/">Regresar al catalogo</a>
+  </div>
+
+  <!-- Si no hay productos, muestro un mensaje simple en lugar de la lista. -->
+  @if (carrito().length === 0) {
+    <p class="empty">Tu carrito esta vacio.</p>
+  } @else {
+    <!-- La lista se pinta con lo que vive en la signal del servicio. -->
+    <ul class="list">
+      @for (producto of carrito(); track $index) {
+        <li class="item">
+          <span class="line">
+            {{ producto.name }} - {{ producto.price | currency: 'MXN' }}
+          </span>
+
+          <button class="btn danger" type="button" (click)="quitar(producto.id)">
+            Quitar
+          </button>
+        </li>
+      }
+    </ul>
+
+    <!-- El total sale de un computed, asi que siempre esta actualizado. -->
+    <div class="total">Total: {{ total() | currency: 'MXN' }}</div>
+
+    <!-- operaciones principales del carrito. -->
+    <div class="actions">
+      <button class="btn" type="button" (click)="vaciar()">Vaciar carrito</button>
+      <button class="btn accent" type="button" (click)="exportarXML()">
+        Exportar recibo XML
+      </button>
+    </div>
+  }
+</section>
