@@ -1,41 +1,36 @@
 <article class="card">
-  <!-- ngSrc habilita optimizacion de imagenes con NgOptimizedImage. -->
   <img
     class="img"
-    [ngSrc]="product().imageUrl"
-    [alt]="product().name"
+    [ngSrc]="item().imageUrl"
+    [alt]="item().name"
     width="320"
     height="260"
   />
 
   <div class="body">
-    <!-- La parte de arriba de la tarjeta: nombre y precio. -->
+    <p class="tag">{{ item().category }}</p>
+
     <div class="top">
-      <h3 class="title">{{ product().name }}</h3>
-      <span class="price">{{ product().price | currency: 'MXN' }}</span>
+      <h3 class="title">{{ item().name }}</h3>
+      <span class="price">{{ item().price | currency: 'MXN' }}</span>
     </div>
 
-    <p class="meta">{{ product().category }}</p>
-    <p class="desc">{{ product().description }}</p>
+    <p class="desc">{{ item().description }}</p>
+    <p class="meta">Maridaje: {{ item().pairing }}</p>
+    <p class="season">{{ item().season }}</p>
 
-    <!-- El estado de stock condiciona texto, color y disponibilidad del boton. -->
-    <p class="stock" [class.out]="!product().inStock">
-      @if (product().inStock) {
-        En stock
-      } @else {
-        Agotado
-      }
-    </p>
+    <p class="stock" [class.stock-out]="!item().inStock">{{ availabilityText() }}</p>
 
-    <!-- Si no hay stock, el boton se desactiva para bloquear la accion. -->
-    <button
-      class="btn"
-      type="button"
-      [disabled]="!product().inStock"
-      [attr.aria-label]="'Agregar ' + product().name + ' al carrito'"
-      (click)="onAdd()"
-    >
-      Agregar al carrito
-    </button>
+    <div class="actions">
+      <button
+        class="add-btn"
+        type="button"
+        [disabled]="!item().inStock"
+        [attr.aria-label]="'Agregar ' + item().name + ' al carrito'"
+        (click)="onAdd()"
+      >
+        Agregar al carrito
+      </button>
+    </div>
   </div>
 </article>

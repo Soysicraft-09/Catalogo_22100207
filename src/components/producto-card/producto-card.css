@@ -1,88 +1,111 @@
-/* Tarjeta base de cada producto. */
 .card {
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  border: 1px solid #dfd8d1;
+  border-radius: 18px;
   overflow: hidden;
-  background: #ffffff;
+  background: linear-gradient(180deg, #fffefc 0%, #fffaf6 100%);
   display: grid;
+  box-shadow: 0 12px 26px rgb(45 35 28 / 10%);
+  transition: transform 0.25s ease;
 }
 
-/* La imagen ocupa todo el ancho y mantiene una altura uniforme entre productos. */
+.card:hover {
+  transform: translateY(-3px);
+}
+
 .img {
   width: 100%;
-  height: 260px;
-  object-fit: contain;
+  height: 230px;
+  object-fit: cover;
   display: block;
-  background: #f3f4f6;
+  background: linear-gradient(135deg, #f2ede6 0%, #e9e4dc 100%);
 }
 
-/* El cuerpo separa visualmente nombre, descripcion, stock y boton. */
 .body {
-  padding: 12px;
+  padding: 0.9rem;
   display: grid;
-  gap: 8px;
+  gap: 0.45rem;
 }
 
-/* Arriba dejo nombre y precio alineados en la misma linea. */
-.top {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: baseline;
-}
-
-/* Titulo del producto. */
-.title {
+.tag {
   margin: 0;
-  font-size: 16px;
-}
-
-/* El precio resalta un poco mas que el resto del texto. */
-.price {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.3rem 0.65rem;
+  background: #e6f3ec;
+  color: #0e4a34;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   font-weight: 700;
 }
 
-/* Categoria con tono mas discreto. */
+.top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  align-items: start;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.42rem;
+  color: #154432;
+}
+
+.price {
+  font-weight: 700;
+  color: #ce1126;
+}
+
 .meta {
   margin: 0;
-  color: #6b7280;
-  font-size: 14px;
+  color: #5f5147;
+  font-size: 0.9rem;
 }
 
-/* Descripcion principal del producto. */
 .desc {
   margin: 0;
-  font-size: 14px;
-  color: #374151;
+  font-size: 0.94rem;
+  line-height: 1.55;
+  color: #42362f;
 }
 
-/* Verde cuando el producto si se puede comprar. */
+.season {
+  margin: 0;
+  color: #6a5a50;
+  font-size: 0.84rem;
+}
+
 .stock {
   margin: 0;
-  font-size: 13px;
+  font-size: 0.82rem;
   font-weight: 600;
-  color: #16a34a;
+  color: #166534;
 }
 
-/* Cambio a rojo si el producto esta agotado. */
-.stock.out {
+.stock-out {
   color: #dc2626;
 }
 
-/* Boton principal para mandar el producto al carrito. */
-.btn {
-  border: 0;
-  border-radius: 10px;
-  padding: 10px 12px;
-  background: #0f766e;
-  color: #ffffff;
-  cursor: pointer;
-  font-weight: 600;
+.actions {
+  margin-top: 0.3rem;
 }
 
-/* Si no hay stock, el boton comunica claramente que no esta disponible. */
-.btn:disabled {
-  background: #cbd5e1;
-  color: #475569;
+.add-btn {
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  background: linear-gradient(100deg, #006847 0%, #138f63 100%);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.add-btn:disabled {
+  background: #d6ddd9;
+  color: #5f6562;
   cursor: not-allowed;
 }

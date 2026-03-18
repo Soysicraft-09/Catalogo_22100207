@@ -1,8 +1,7 @@
 import { CurrencyPipe, NgOptimizedImage } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { Product } from '../../models/producto.model';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { MenuItem } from '../../models/producto.model';
 
-// Componente presentacional: renderiza un producto y emite evento para agregarlo.
 @Component({
   selector: 'app-producto-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -11,13 +10,18 @@ import { Product } from '../../models/producto.model';
   styleUrl: './producto-card.css',
 })
 export class ProductoCard {
-  // input.required obliga a que la tarjeta siempre reciba un producto valido.
-  readonly product = input.required<Product>();
-  // Este output avisa al componente padre cuando se quiere agregar algo al carrito.
-  readonly add = output<Product>();
+  readonly item = input.required<MenuItem>();
+  readonly add = output<MenuItem>();
+
+  readonly availabilityText = computed(() =>
+    this.item().inStock ? 'Disponible esta noche' : 'Cupo completo por hoy'
+  );
 
   onAdd(): void {
-    // Reenvio el producto completo para que el padre decida que hacer con el.
-    this.add.emit(this.product());
+    if (!this.item().inStock) {
+      return;
+    }
+
+    this.add.emit(this.item());
   }
 }

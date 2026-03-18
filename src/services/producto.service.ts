@@ -1,133 +1,214 @@
 import { Injectable } from '@angular/core';
-import { Product } from '../models/producto.model';
 import { from, Observable } from 'rxjs';
+import { MenuItem } from '../models/producto.model';
 
 @Injectable({ providedIn: 'root' })
-export class ProductsService {
-  // Servicio responsable de obtener y transformar el catalogo desde XML a objetos Product.
-
-  // Regreso un Observable para que el componente consuma los productos como flujo de datos.
-  getAll(): Observable<Product[]> {
-    // from() convierte la Promise de fetch en Observable para mantener API reactiva.
+export class MenuService {
+  getSeasonMenu(): Observable<MenuItem[]> {
     return from(
-      // Intento leer el XML real primero, que es de donde sale el catalogo.
       fetch('/productos.xml')
         .then((response) => response.text())
         .then((xmlText) => {
-          // Primero pruebo con DOMParser porque es la forma mas limpia de leer XML.
-          const parsedByDom = this.parseProductsWithDom(xmlText);
-          if (parsedByDom.length > 0) {
-            return parsedByDom;
-          }
-
-          // Si por alguna razon el DOM no saca datos, hago un intento extra con regex.
-          const parsedByRegex = this.parseProducts(xmlText);
-          if (parsedByRegex.length > 0) {
-            return parsedByRegex;
-          }
-
-          // Si el XML viene vacio o mal formado, al menos dejo productos de ejemplo.
-          return this.getFallbackProducts();
+          const parsed = this.parseMenuWithDom(xmlText);
+          return parsed.length > 0 ? parsed : this.getFallbackMenu();
         })
-        // Si falla red/parseo, el flujo sigue con datos de respaldo para no romper UI.
-        .catch(() => this.getFallbackProducts())
+        .catch(() => this.getFallbackMenu())
     );
   }
 
-  private parseProducts(xmlText: string): Product[] {
-    // Este helper me evita repetir la misma logica para cada etiqueta.
-    const getTagValue = (text: string, tag: string): string => {
-      const regex = new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`, 'i');
-      return regex.exec(text)?.[1]?.trim() ?? '';
-    };
-
-    // Cada bloque <product>...</product> se convierte luego en un objeto Product.
-    const blocks = xmlText.match(/<product>([\s\S]*?)<\/product>/gi) ?? [];
-    return blocks.map((block) => ({
-      id: Number(getTagValue(block, 'id')),
-      name: getTagValue(block, 'name'),
-      price: Number(getTagValue(block, 'price')),
-      imageUrl: getTagValue(block, 'imageUrl'),
-      category: getTagValue(block, 'category'),
-      description: getTagValue(block, 'description'),
-      inStock: getTagValue(block, 'inStock').toLowerCase() === 'true',
-    }));
-  }
-
-  private parseProductsWithDom(xmlText: string): Product[] {
-    // DOMParser me deja tratar el XML casi como si fuera un documento HTML.
+  private parseMenuWithDom(xmlText: string): MenuItem[] {
     const doc = new DOMParser().parseFromString(xmlText, 'application/xml');
-    const nodes = Array.from(doc.getElementsByTagName('product'));
+    const parserError = doc.querySelector('parsererror');
 
-    return nodes.map((node) => ({
-      id: Number(node.getElementsByTagName('id')[0]?.textContent?.trim() ?? '0'),
-      name: node.getElementsByTagName('name')[0]?.textContent?.trim() ?? '',
-      price: Number(node.getElementsByTagName('price')[0]?.textContent?.trim() ?? '0'),
-      imageUrl: node.getElementsByTagName('imageUrl')[0]?.textContent?.trim() ?? '',
-      category: node.getElementsByTagName('category')[0]?.textContent?.trim() ?? '',
-      description: node.getElementsByTagName('description')[0]?.textContent?.trim() ?? '',
-      inStock:
-        (node.getElementsByTagName('inStock')[0]?.textContent?.trim().toLowerCase() ?? '') ===
-        'true',
-    }));
+    if (parserError) {
+      return [];
+    }
+
+    return Array.from(doc.getElementsByTagName('product'))
+      .map((node) => this.buildMenuItem(node))
+      .filter((item): item is MenuItem => item !== null);
   }
 
-  private getFallbackProducts(): Product[] {
-    // Estos datos son un respaldo para que la practica siga funcionando aunque falle el XML.
+  private buildMenuItem(node: Element): MenuItem | null {
+    const id = Number(this.getTagText(node, 'id'));
+    const price = Number(this.getTagText(node, 'price'));
+
+    if (!Number.isFinite(id) || !Number.isFinite(price)) {
+      return null;
+    }
+
+    return {
+      id,
+      name: this.getTagText(node, 'name'),
+      price,
+      imageUrl: this.getTagText(node, 'imageUrl'),
+      category: this.getTagText(node, 'category'),
+      description: this.getTagText(node, 'description'),
+      inStock: this.getTagText(node, 'inStock').toLowerCase() === 'true',
+      pairing: this.getTagText(node, 'pairing') || 'Sugerencia del sommelier disponible en sala',
+      season: this.getTagText(node, 'season') || 'Temporada actual',
+    };
+  }
+
+  private getTagText(node: Element, tagName: string): string {
+    return node.getElementsByTagName(tagName)[0]?.textContent?.trim() ?? '';
+  }
+
+  private getFallbackMenu(): MenuItem[] {
     return [
       {
         id: 1,
-        name: 'Tenis Running Pro',
-        price: 1899,
+        name: 'Tostada de Atun Aleta Azul',
+        price: 275,
         imageUrl: '/img/tenis-running-pro.png',
-        category: 'Calzado',
-        description: 'Tenis ligeros para correr con suela antiderrapante.',
+        category: 'Entradas',
+        description: 'Atun marinado en citricos, aguacate tatemado y brotes de cilantro criollo.',
         inStock: true,
+        pairing: 'Sauvignon Blanc del Valle de Guadalupe',
+        season: 'Primavera - Verano',
       },
       {
         id: 2,
-        name: 'Sudadera Oversize',
-        price: 799,
+        name: 'Aguachile Negro de Camaron',
+        price: 295,
         imageUrl: '/img/sudadera-oversize.png',
-        category: 'Ropa',
-        description: 'Sudadera de algodon afelpada, corte comodo unisex.',
-        inStock: false,
+        category: 'Entradas',
+        description: 'Camaron curado, pepino encurtido y emulsiones de chile chilhuacle negro.',
+        inStock: true,
+        pairing: 'Vino rosado seco de Baja California',
+        season: 'Primavera - Verano',
       },
       {
         id: 3,
-        name: 'Playera Basica Blanca',
-        price: 299,
+        name: 'Sope de Huitlacoche y Queso de Oveja',
+        price: 260,
         imageUrl: '/img/playera-blanca.png',
-        category: 'Ropa',
-        description: 'Playera de cuello redondo, tela suave y fresca.',
+        category: 'Entradas',
+        description: 'Masa azul crocante, salsa de tomatillo tatemado y brotes de temporada.',
         inStock: true,
+        pairing: 'Pinot Noir joven',
+        season: 'Otonio - Invierno',
       },
       {
         id: 4,
-        name: 'Jeans Slim Azul',
-        price: 999,
+        name: 'Crema de Elote Ahumado',
+        price: 240,
         imageUrl: '/img/jeans-slim-azul.png',
-        category: 'Ropa',
-        description: 'Jeans elastico de ajuste slim para uso diario.',
+        category: 'Entradas',
+        description: 'Espuma de queso Cotija y aceite de chile ancho para una entrada sedosa.',
         inStock: true,
+        pairing: 'Mezcal joven con naranja deshidratada',
+        season: 'Todo el anio',
       },
       {
         id: 5,
-        name: 'Tenis Urban Street',
-        price: 1499,
+        name: 'Taco de Lechon Confitado',
+        price: 315,
         imageUrl: '/img/tenis-urban-street.png',
-        category: 'Calzado',
-        description: 'Tenis casuales para ciudad con plantilla acolchada.',
+        category: 'Entradas',
+        description: 'Lechon cocido a baja temperatura, cebolla curtida y pure de frijol ayocote.',
         inStock: true,
+        pairing: 'Paloma clarificada de toronja',
+        season: 'Todo el anio',
       },
       {
         id: 6,
-        name: 'Chaqueta Rompevientos',
-        price: 1199,
+        name: 'Rib Eye en Costra de Cacao',
+        price: 640,
         imageUrl: '/img/chaqueta-rompevientos.png',
-        category: 'Ropa',
-        description: 'Chaqueta ligera resistente al viento y salpicaduras.',
-        inStock: false,
+        category: 'Fuertes',
+        description: 'Corte premium, pure de camote rostizado y demi-glace de chile pasilla.',
+        inStock: true,
+        pairing: 'Syrah reserva de Coahuila',
+        season: 'Otonio - Invierno',
+      },
+      {
+        id: 7,
+        name: 'Pesca del Dia al Pipian Verde',
+        price: 520,
+        imageUrl: '/img/tenis-running-pro.png',
+        category: 'Fuertes',
+        description: 'Filete sellado con vegetales baby y pipian de pepita y hierbas de huerto.',
+        inStock: true,
+        pairing: 'Chardonnay con barrica ligera',
+        season: 'Primavera - Verano',
+      },
+      {
+        id: 8,
+        name: 'Pato en Mole de Ciruela',
+        price: 590,
+        imageUrl: '/img/sudadera-oversize.png',
+        category: 'Fuertes',
+        description: 'Pechuga sellada, mole de ciruela especiado y pure de coliflor rostizada.',
+        inStock: true,
+        pairing: 'Tempranillo mexicano de altura',
+        season: 'Otonio - Invierno',
+      },
+      {
+        id: 9,
+        name: 'Arroz Meloso de Mariscos',
+        price: 560,
+        imageUrl: '/img/playera-blanca.png',
+        category: 'Fuertes',
+        description: 'Caldo concentrado de mar, azafran, pulpo rostizado y camaron del Pacifico.',
+        inStock: true,
+        pairing: 'Albarino de expresion mineral',
+        season: 'Primavera - Verano',
+      },
+      {
+        id: 10,
+        name: 'Negroni de Guayaba y Romero',
+        price: 230,
+        imageUrl: '/img/jeans-slim-azul.png',
+        category: 'Mixologia',
+        description: 'Gin botanico, bitter italiano y cordial de guayaba con romero flameado.',
+        inStock: true,
+        pairing: 'Ideal con entradas frias',
+        season: 'Menu de autor',
+      },
+      {
+        id: 11,
+        name: 'Margarita de Jamaica Ahumada',
+        price: 220,
+        imageUrl: '/img/tenis-urban-street.png',
+        category: 'Mixologia',
+        description: 'Tequila reposado, licor de naranja y jarabe de jamaica con sal de gusano.',
+        inStock: true,
+        pairing: 'Recomendado para platos especiados',
+        season: 'Menu de autor',
+      },
+      {
+        id: 12,
+        name: 'Mousse de Chocolate Oaxaqueno',
+        price: 210,
+        imageUrl: '/img/chaqueta-rompevientos.png',
+        category: 'Postres',
+        description: 'Cacao de origen, crumble de cacao nibs y helado artesanal de vainilla.',
+        inStock: true,
+        pairing: 'Licor de cafe de altura',
+        season: 'Todo el anio',
+      },
+      {
+        id: 13,
+        name: 'Carajillo de Maiz Tostado',
+        price: 215,
+        imageUrl: '/img/tenis-running-pro.png',
+        category: 'Mixologia',
+        description: 'Licor de cafe, destilado de maiz y espuma ligera de canela.',
+        inStock: true,
+        pairing: 'Ideal para cierre de degustacion',
+        season: 'Menu de autor',
+      },
+      {
+        id: 14,
+        name: 'Xoconostle Spritz Sin Alcohol',
+        price: 185,
+        imageUrl: '/img/sudadera-oversize.png',
+        category: 'Mixologia',
+        description: 'Xoconostle, toronja y agua mineral con aceite de limon mexicano.',
+        inStock: true,
+        pairing: 'Perfecto para entradas frescas',
+        season: 'Primavera - Verano',
       },
     ];
   }

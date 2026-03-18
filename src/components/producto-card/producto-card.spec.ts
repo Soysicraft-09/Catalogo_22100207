@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProductoCard } from './producto-card';
-import { Product } from '../../models/producto.model';
+import { MenuItem } from '../../models/producto.model';
 
-// Verifica que la tarjeta soporte un Product valido via input signal.
+// Verifica que la tarjeta soporte un MenuItem valido via input signal.
 describe('ProductoCard', () => {
   let component: ProductoCard;
   let fixture: ComponentFixture<ProductoCard>;
@@ -18,19 +18,20 @@ describe('ProductoCard', () => {
     fixture = TestBed.createComponent(ProductoCard);
     component = fixture.componentInstance;
 
-    // Creo un producto ficticio para llenar los datos del template.
-    const productMock: Product = {
+    const dishMock: MenuItem = {
       id: 1,
-      name: 'Producto test',
+      name: 'Platillo de prueba',
       price: 100,
       imageUrl: '/img/test.jpg',
-      category: 'Categoria test',
+      category: 'Entradas',
       description: 'Descripcion test',
       inStock: true,
+      pairing: 'Maridaje test',
+      season: 'Temporada test',
     };
 
     // setInput es la forma correcta de alimentar un input signal en pruebas.
-    fixture.componentRef.setInput('product', productMock);
+    fixture.componentRef.setInput('item', dishMock);
     await fixture.whenStable();
   });
 

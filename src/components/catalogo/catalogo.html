@@ -1,29 +1,264 @@
-<!-- Encabezado del catalogo con resumen rapido y acceso al carrito. -->
-<header class="header">
-  <div>
-    <h1>Catalogo</h1>
-    <p>Productos en stock: {{ inStockCount() }}</p>
-  </div>
+<main class="gourmet-page" aria-label="Sitio del restaurante gourmet">
+  <header class="hero" id="inicio">
+    <nav class="top-nav" aria-label="Navegacion principal">
+      <p class="brand">CASA QUETZAL</p>
+      <div class="nav-actions">
+        <a class="ghost-link" href="#historia">Historia</a>
+        <a class="ghost-link" href="#menu">Menu</a>
+        <a class="ghost-link" href="#mixologia">Mixologia</a>
+        <a class="ghost-link" href="#carrito">Carrito ({{ cartItemsCount() }})</a>
+        <a class="primary-link" href="#pedidos">Como pedir</a>
+      </div>
+    </nav>
 
-  <!-- El badge se actualiza solo porque depende de una señal reactiva. -->
-  <a class="cart-link" routerLink="/carrito" aria-label="Ver carrito de compras">
-    <span>Ver carrito</span>
-    <span class="cart-badge" [attr.aria-label]="carritoCount() + ' productos en el carrito'">
-      {{ carritoCount() }}
-    </span>
-  </a>
-</header>
+    <div class="hero-content">
+      <p class="kicker">Alta cocina mexicana contemporanea</p>
+      <h1>Experiencia gourmet mexicana en formato digital tipo delivery.</h1>
+      <p class="lead">
+        Esta propuesta funciona como negocio ficticio orientado a pedidos en linea (estilo Uber Eats),
+        con foco en menu interactivo, fotografia gastronomica y mixologia de autor.
+      </p>
 
-<!-- Aqui voy cambiando la vista segun el estado de carga. -->
-@if (errorMessage()) {
-  <p class="status error">{{ errorMessage() }}</p>
-} @else if (products().length === 0) {
-  <p class="status">Cargando productos...</p>
-} @else {
-  <!-- Cuando ya estan los datos pone una tarjeta para cada producto. -->
-  <section class="grid">
-    @for (p of products(); track p.id) {
-      <app-producto-card [product]="p" (add)="agregar($event)"></app-producto-card>
+      <div class="hero-ctas">
+        <a class="primary-link" href="#menu">Explorar menu de temporada</a>
+        <a class="secondary-link" href="#pedidos">Ver flujo de pedidos</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="insights" aria-labelledby="viabilidad-title">
+    <h2 id="viabilidad-title">Senales de viabilidad</h2>
+    <p>
+      El concepto responde a una demanda real del mercado premium, con enfoque visual fuerte,
+      experiencia digital movil y alto potencial para reforzar marca y atraer nuevos comensales.
+    </p>
+
+    <div class="insight-grid">
+      @for (card of insightCards; track card.title) {
+        <article class="insight-card">
+          <p class="insight-value">{{ card.value }}</p>
+          <h3>{{ card.title }}</h3>
+          <p>{{ card.detail }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="story" id="historia" aria-labelledby="historia-title">
+    <h2 id="historia-title">Historia del chef / restaurante</h2>
+    <p>
+      Casa Quetzal nace para fusionar tecnica internacional con esencia mexicana. Cada temporada se
+      construye con ingredientes locales y una narrativa culinaria que conecta con el origen del pais.
+    </p>
+
+    <div class="timeline-grid">
+      @for (step of chefMilestones; track step.year) {
+        <article class="timeline-card">
+          <p class="timeline-year">{{ step.year }}</p>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.detail }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="menu-section" id="menu" aria-labelledby="menu-title">
+    <div class="section-header">
+      <h2 id="menu-title">Menu interactivo con fotografia gastronomica</h2>
+      <p>
+        {{ availableCount() }} creaciones disponibles en {{ categoriesCount() }} categorias.
+        Precios mostrados en MXN con impuestos incluidos.
+      </p>
+    </div>
+
+    <div class="menu-controls" aria-label="Filtros del menu">
+      <input
+        class="search-input"
+        type="search"
+        placeholder="Buscar platillo, ingrediente o categoria"
+        [value]="searchTerm()"
+        (input)="updateSearch($event)"
+        aria-label="Buscar en menu"
+      />
+
+      <div class="category-chips" role="group" aria-label="Categorias del menu">
+        @for (category of menuCategories(); track category) {
+          <button
+            class="chip"
+            type="button"
+            [class.is-active]="selectedCategory() === category"
+            (click)="setCategory(category)"
+          >
+            {{ category }}
+          </button>
+        }
+      </div>
+
+      <button
+        class="availability-toggle"
+        type="button"
+        [class.active]="onlyAvailable()"
+        (click)="toggleAvailabilityFilter()"
+      >
+        @if (onlyAvailable()) {
+          Mostrar todos
+        } @else {
+          Solo disponibles
+        }
+      </button>
+    </div>
+
+    @if (errorMessage()) {
+      <p class="status error">{{ errorMessage() }}</p>
+    } @else if (filteredMenuItems().length === 0) {
+      <p class="status">No encontramos platillos con ese filtro. Prueba otra categoria o busqueda.</p>
+    } @else if (menuItems().length === 0) {
+      <p class="status">Cargando menu...</p>
+    } @else {
+      <div class="menu-grid">
+        @for (dish of filteredMenuItems(); track dish.id) {
+          <app-producto-card [item]="dish" (add)="agregarAlCarrito($event)"></app-producto-card>
+        }
+      </div>
     }
   </section>
-}
+
+  <section class="cart" id="carrito" aria-labelledby="carrito-title">
+    <div class="section-header">
+      <h2 id="carrito-title">Carrito y ticket XML</h2>
+      <p>
+        {{ cartItemsCount() }} items seleccionados con total de
+        {{ formatPrice(cartTotal()) }}.
+      </p>
+    </div>
+
+    @if (cartLines().length === 0) {
+      <p class="status">Tu carrito esta vacio. Agrega platillos para armar tu pedido gourmet.</p>
+    } @else {
+      <div class="cart-grid">
+        <div class="cart-lines" role="list" aria-label="Lineas del carrito">
+          @for (line of cartLines(); track line.item.id) {
+            <article class="cart-line" role="listitem">
+              <div class="line-info">
+                <h3>{{ line.item.name }}</h3>
+                <p>{{ line.item.category }}</p>
+              </div>
+
+              <div class="line-controls" aria-label="Controles de cantidad">
+                <button
+                  type="button"
+                  (click)="decrementar(line)"
+                  [attr.aria-label]="'Reducir cantidad de ' + line.item.name"
+                >
+                  -
+                </button>
+                <span>{{ line.quantity }}</span>
+                <button
+                  type="button"
+                  (click)="incrementar(line)"
+                  [attr.aria-label]="'Aumentar cantidad de ' + line.item.name"
+                >
+                  +
+                </button>
+              </div>
+
+              <p class="line-price">{{ formatPrice(line.item.price * line.quantity) }}</p>
+
+              <button class="line-remove" type="button" (click)="eliminar(line)">
+                Eliminar
+              </button>
+            </article>
+          }
+        </div>
+
+        <aside class="cart-summary" aria-label="Resumen del carrito">
+          <h3>Resumen de compra</h3>
+          <dl>
+            <div>
+              <dt>Items</dt>
+              <dd>{{ cartItemsCount() }}</dd>
+            </div>
+            <div>
+              <dt>Total</dt>
+              <dd>{{ formatPrice(cartTotal()) }}</dd>
+            </div>
+          </dl>
+
+          <div class="cart-actions">
+            <button class="primary-link" type="button" (click)="descargarTicket()">
+              Descargar ticket XML
+            </button>
+            <button class="secondary-link" type="button" (click)="vaciarCarrito()">
+              Vaciar carrito
+            </button>
+          </div>
+        </aside>
+      </div>
+    }
+  </section>
+
+  <section class="mixology" id="mixologia" aria-labelledby="mixologia-title">
+    <h2 id="mixologia-title">Mixologia de autor</h2>
+    <p>
+      Una barra inspirada en botanicos nacionales, destilados artesanales y perfiles aromaticos de
+      temporada para acompanar la cocina mexicana contemporanea.
+    </p>
+
+    @if (mixologyItems().length === 0) {
+      <p class="status">Mixologia en actualizacion.</p>
+    } @else {
+      <div class="mixology-grid">
+        @for (drink of mixologyItems(); track drink.id) {
+          <app-producto-card [item]="drink" (add)="agregarAlCarrito($event)"></app-producto-card>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="story" id="conocenos" aria-labelledby="conocenos-title">
+    <h2 id="conocenos-title">Propuesta de valor gourmet</h2>
+    <div class="pillars-grid">
+      @for (pillar of pillars; track pillar.title) {
+        <article class="pillar">
+          <h3>{{ pillar.title }}</h3>
+          <p>{{ pillar.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="commitments" aria-labelledby="compromisos-title">
+    <h2 id="compromisos-title">Sustentabilidad y cumplimiento</h2>
+    <div class="commitment-grid">
+      @for (commitment of commitments; track commitment.title) {
+        <article class="commitment">
+          <h3>{{ commitment.title }}</h3>
+          <p>{{ commitment.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="delivery" id="pedidos" aria-labelledby="pedidos-title">
+    <h2 id="pedidos-title">Pedidos online (sin sucursal fisica)</h2>
+    <p>
+      Operamos como dark kitchen ficticia: no hay ubicacion para visitas presenciales. El canal principal
+      es delivery por apps de reparto y aliados de ultima milla.
+    </p>
+
+    <div class="delivery-grid">
+      @for (step of deliverySteps; track step.title) {
+        <article class="delivery-card">
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.detail }}</p>
+        </article>
+      }
+    </div>
+
+    <div class="delivery-badges" aria-label="Canales de pedido sugeridos">
+      <span>Uber Eats</span>
+      <span>Didi Food</span>
+      <span>Rappi</span>
+    </div>
+  </section>
+</main>

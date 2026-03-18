@@ -1,9 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
 import { Catalogo } from './catalogo';
-import { ProductsService } from '../../services/producto.service';
+import { MenuService } from '../../services/producto.service';
 
 // Verifica que Catalogo se pueda instanciar con dependencias simuladas.
 describe('Catalogo', () => {
@@ -15,12 +14,9 @@ describe('Catalogo', () => {
       // Pruebo el componente real, no una version simplificada.
       imports: [Catalogo],
       providers: [
-        // Hace falta router porque el template usa routerLink.
-        provideRouter([]),
         {
-          // Simulo el servicio para no depender del XML durante la prueba.
-          provide: ProductsService,
-          useValue: { getAll: () => of([]) },
+          provide: MenuService,
+          useValue: { getSeasonMenu: () => of([]) },
         },
       ],
     })

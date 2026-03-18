@@ -1,4 +1,3 @@
-/*
-	Estilos del componente raiz App.
-	Se mantiene vacio porque la UI real vive en los componentes de catalogo y carrito.
-*/
+:host {
+  display: block;
+}
