@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 
+// Ruteo principal con carga diferida de componentes para mantener arranque liviano.
 export const routes: Routes = [
   {
     // La vista principal muestra el catalogo de productos.

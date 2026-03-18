@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 
 import { Carrito } from './carrito';
 
+// Verifica que el componente de carrito renderice sin errores de dependencias.
 describe('Carrito', () => {
   let component: Carrito;
   let fixture: ComponentFixture<Carrito>;

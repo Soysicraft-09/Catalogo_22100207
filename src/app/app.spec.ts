@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { App } from './app';
 import { provideRouter } from '@angular/router';
 
+// Suite minima del componente raiz: construccion y presencia del router-outlet.
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({

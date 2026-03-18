@@ -5,6 +5,7 @@ import { of } from 'rxjs';
 import { Catalogo } from './catalogo';
 import { ProductsService } from '../../services/producto.service';
 
+// Verifica que Catalogo se pueda instanciar con dependencias simuladas.
 describe('Catalogo', () => {
   let component: Catalogo;
   let fixture: ComponentFixture<Catalogo>;

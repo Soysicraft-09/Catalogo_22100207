@@ -5,6 +5,7 @@ import { ProductsService } from '../../services/producto.service';
 import { CarritoService } from '../../services/carrito.service';
 import { Product } from '../../models/producto.model';
 
+// vista principal carga los productos y los muestra
 @Component({
   selector: 'app-catalogo',
   changeDetection: ChangeDetectionStrategy.OnPush,

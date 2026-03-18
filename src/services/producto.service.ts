@@ -4,8 +4,11 @@ import { from, Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
+  // Servicio responsable de obtener y transformar el catalogo desde XML a objetos Product.
+
   // Regreso un Observable para que el componente consuma los productos como flujo de datos.
   getAll(): Observable<Product[]> {
+    // from() convierte la Promise de fetch en Observable para mantener API reactiva.
     return from(
       // Intento leer el XML real primero, que es de donde sale el catalogo.
       fetch('/productos.xml')
@@ -26,6 +29,7 @@ export class ProductsService {
           // Si el XML viene vacio o mal formado, al menos dejo productos de ejemplo.
           return this.getFallbackProducts();
         })
+        // Si falla red/parseo, el flujo sigue con datos de respaldo para no romper UI.
         .catch(() => this.getFallbackProducts())
     );
   }

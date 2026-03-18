@@ -3,6 +3,8 @@ import { Product } from '../models/producto.model';
 
 @Injectable({ providedIn: 'root' })
 export class CarritoService {
+  // Estado global del carrito compartido entre catalogo y vista de carrito.
+
   // Este signal es la fuente de verdad del carrito.
   private readonly productosSignal = signal<Product[]>([]);
 
@@ -11,6 +13,7 @@ export class CarritoService {
 
   agregar(producto: Product): void {
     // Aqui simplemente agrego el producto al final de la lista actual.
+    // Nota: no se maneja cantidad; cada agregado inserta una nueva ocurrencia.
     this.productosSignal.update((lista) => [...lista, producto]);
   }
 
@@ -59,7 +62,7 @@ export class CarritoService {
     xml += `  <total>${this.total()}</total>\n`;
     xml += '</recibo>';
 
-  // Creo un archivo temporal en memoria para forzar la descarga desde el navegador.
+    // Creo un archivo temporal en memoria para forzar la descarga desde el navegador.
     const blob = new Blob([xml], { type: 'application/xml' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

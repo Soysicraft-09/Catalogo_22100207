@@ -2,6 +2,7 @@ import { CurrencyPipe, NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { Product } from '../../models/producto.model';
 
+// Componente presentacional: renderiza un producto y emite evento para agregarlo.
 @Component({
   selector: 'app-producto-card',
   changeDetection: ChangeDetectionStrategy.OnPush,

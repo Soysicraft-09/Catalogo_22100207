@@ -4,6 +4,7 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 
+// Registro central de providers globales de Angular para toda la aplicacion.
 export const appConfig: ApplicationConfig = {
   providers: [
     // Esto hace que errores globales del navegador pasen por Angular.

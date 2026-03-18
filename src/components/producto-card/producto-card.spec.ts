@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductoCard } from './producto-card';
 import { Product } from '../../models/producto.model';
 
+// Verifica que la tarjeta soporte un Product valido via input signal.
 describe('ProductoCard', () => {
   let component: ProductoCard;
   let fixture: ComponentFixture<ProductoCard>;

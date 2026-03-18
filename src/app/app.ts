@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
+// Componente raiz: no contiene negocio, solo sirve de host para las rutas.
 @Component({
   // Este selector es la etiqueta que Angular busca dentro de index.html.
   selector: 'app-root',

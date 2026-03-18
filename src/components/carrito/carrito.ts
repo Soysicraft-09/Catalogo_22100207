@@ -3,6 +3,7 @@ import { CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CarritoService } from '../../services/carrito.service';
 
+// Vista de resumen de compra: lista, total y acciones del carrito actual.
 @Component({
   selector: 'app-carrito',
   changeDetection: ChangeDetectionStrategy.OnPush,
