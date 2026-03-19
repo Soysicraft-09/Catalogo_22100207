@@ -4,7 +4,7 @@
     <id>1</id>
     <name>Tostada de Atun Aleta Azul</name>
     <price>275</price>
-    <imageUrl>/img/tenis-running-pro.png</imageUrl>
+    <imageUrl>/img/Tostada-de-Atun-Aleta-Azul.png</imageUrl>
     <category>Entradas</category>
     <description>Atun marinado en citricos, aguacate tatemado y brotes de cilantro criollo.</description>
     <inStock>true</inStock>
@@ -16,7 +16,7 @@
     <id>2</id>
     <name>Aguachile Negro de Camaron</name>
     <price>295</price>
-    <imageUrl>/img/sudadera-oversize.png</imageUrl>
+    <imageUrl>/img/Aguachile-Negro-de-Camaron.png</imageUrl>
     <category>Entradas</category>
     <description>Camaron curado, pepino encurtido y emulsiones de chile chilhuacle negro.</description>
     <inStock>true</inStock>
@@ -28,7 +28,7 @@
     <id>3</id>
     <name>Sope de Huitlacoche y Queso de Oveja</name>
     <price>260</price>
-    <imageUrl>/img/playera-blanca.png</imageUrl>
+    <imageUrl>/img/Sope-de-Huitlacoche-y-Queso-de-Oveja.png</imageUrl>
     <category>Entradas</category>
     <description>Masa azul crocante, salsa de tomatillo tatemado y brotes de temporada.</description>
     <inStock>true</inStock>
@@ -40,7 +40,7 @@
     <id>4</id>
     <name>Crema de Elote Ahumado</name>
     <price>240</price>
-    <imageUrl>/img/jeans-slim-azul.png</imageUrl>
+    <imageUrl>/img/Crema-de-Elote-Ahumado.png</imageUrl>
     <category>Entradas</category>
     <description>Espuma de queso Cotija y aceite de chile ancho para una entrada sedosa.</description>
     <inStock>true</inStock>
@@ -52,7 +52,7 @@
     <id>5</id>
     <name>Taco de Lechon Confitado</name>
     <price>315</price>
-    <imageUrl>/img/tenis-urban-street.png</imageUrl>
+    <imageUrl>/img/Taco-de-Lechon-Confitado.png</imageUrl>
     <category>Entradas</category>
     <description>Lechon cocido a baja temperatura, cebolla curtida y pure de frijol ayocote.</description>
     <inStock>true</inStock>
@@ -64,7 +64,7 @@
     <id>6</id>
     <name>Rib Eye en Costra de Cacao</name>
     <price>640</price>
-    <imageUrl>/img/chaqueta-rompevientos.png</imageUrl>
+    <imageUrl>/img/Rib-Eye-en-Costra-de-Cacao.png</imageUrl>
     <category>Fuertes</category>
     <description>Corte premium, pure de camote rostizado y demi-glace de chile pasilla.</description>
     <inStock>true</inStock>
@@ -76,7 +76,7 @@
     <id>7</id>
     <name>Pesca del Dia al Pipian Verde</name>
     <price>520</price>
-    <imageUrl>/img/tenis-running-pro.png</imageUrl>
+    <imageUrl>/img/Pesca-del-Dia-al-Pipian-Verde.png</imageUrl>
     <category>Fuertes</category>
     <description>Filete sellado con vegetales baby y pipian de pepita y hierbas de huerto.</description>
     <inStock>true</inStock>
@@ -88,7 +88,7 @@
     <id>8</id>
     <name>Pato en Mole de Ciruela</name>
     <price>590</price>
-    <imageUrl>/img/sudadera-oversize.png</imageUrl>
+    <imageUrl>/img/Pato-en-Mole-de-Ciruela.png</imageUrl>
     <category>Fuertes</category>
     <description>Pechuga sellada, mole de ciruela especiado y pure de coliflor rostizada.</description>
     <inStock>true</inStock>
@@ -100,7 +100,7 @@
     <id>9</id>
     <name>Arroz Meloso de Mariscos</name>
     <price>560</price>
-    <imageUrl>/img/playera-blanca.png</imageUrl>
+    <imageUrl>/img/Arroz-Meloso-de-Mariscos.png</imageUrl>
     <category>Fuertes</category>
     <description>Caldo concentrado de mar, azafran, pulpo rostizado y camaron del Pacifico.</description>
     <inStock>true</inStock>
@@ -112,7 +112,7 @@
     <id>10</id>
     <name>Negroni de Guayaba y Romero</name>
     <price>230</price>
-    <imageUrl>/img/jeans-slim-azul.png</imageUrl>
+    <imageUrl>/img/Negroni-de-Guayaba-y-Romero.png</imageUrl>
     <category>Mixologia</category>
     <description>Gin botanico, bitter italiano y cordial de guayaba con romero flameado.</description>
     <inStock>true</inStock>
@@ -124,7 +124,7 @@
     <id>11</id>
     <name>Margarita de Jamaica Ahumada</name>
     <price>220</price>
-    <imageUrl>/img/tenis-urban-street.png</imageUrl>
+    <imageUrl>/img/Margarita-de-Jamaica-Ahumada.png</imageUrl>
     <category>Mixologia</category>
     <description>Tequila reposado, licor de naranja y jarabe de jamaica con sal de gusano.</description>
     <inStock>true</inStock>
@@ -136,7 +136,7 @@
     <id>12</id>
     <name>Mousse de Chocolate Oaxaqueno</name>
     <price>210</price>
-    <imageUrl>/img/chaqueta-rompevientos.png</imageUrl>
+    <imageUrl>/img/Mousse-de-Chocolate-Oaxaqueno.png</imageUrl>
     <category>Postres</category>
     <description>Cacao de origen, crumble de cacao nibs y helado artesanal de vainilla.</description>
     <inStock>true</inStock>
@@ -148,7 +148,7 @@
     <id>13</id>
     <name>Carajillo de Maiz Tostado</name>
     <price>215</price>
-    <imageUrl>/img/tenis-running-pro.png</imageUrl>
+    <imageUrl>/img/Carajillo-de-Maiz-Tostado.png</imageUrl>
     <category>Mixologia</category>
     <description>Licor de cafe, destilado de maiz y espuma ligera de canela.</description>
     <inStock>true</inStock>
@@ -160,7 +160,7 @@
     <id>14</id>
     <name>Xoconostle Spritz Sin Alcohol</name>
     <price>185</price>
-    <imageUrl>/img/sudadera-oversize.png</imageUrl>
+    <imageUrl>/img/Xoconostle-Spritz-Sin-Alcohol.png</imageUrl>
     <category>Mixologia</category>
     <description>Xoconostle, toronja y agua mineral con aceite de limon mexicano.</description>
     <inStock>true</inStock>
