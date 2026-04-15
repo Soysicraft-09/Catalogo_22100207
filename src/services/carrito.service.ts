@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { effect, Injectable, signal } from '@angular/core';
 import { MenuItem } from '../models/producto.model';
 
 export interface CartLine {
@@ -8,9 +8,16 @@ export interface CartLine {
 
 @Injectable({ providedIn: 'root' })
 export class CarritoService {
-  private readonly lineasSignal = signal<CartLine[]>([]);
+  private readonly cartStorageKey = 'casa-quetzal-cart-v1';
+  private readonly lineasSignal = signal<CartLine[]>(this.readStoredCart());
 
   readonly lineas = this.lineasSignal.asReadonly();
+
+  constructor() {
+    effect(() => {
+      this.persistCart(this.lineasSignal());
+    });
+  }
 
   agregar(item: MenuItem): void {
     this.lineasSignal.update((current) => {
@@ -117,5 +124,70 @@ export class CarritoService {
       .replaceAll('>', '&gt;')
       .replaceAll('"', '&quot;')
       .replaceAll("'", '&apos;');
+  }
+
+  private readStoredCart(): CartLine[] {
+    try {
+      const raw = localStorage.getItem(this.cartStorageKey);
+
+      if (!raw) {
+        return [];
+      }
+
+      const parsed: unknown = JSON.parse(raw);
+
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+
+      return parsed
+        .filter((line): line is CartLine => this.isCartLine(line))
+        .map((line) => ({ ...line, item: { ...line.item } }));
+    } catch {
+      return [];
+    }
+  }
+
+  private persistCart(lines: CartLine[]): void {
+    try {
+      localStorage.setItem(this.cartStorageKey, JSON.stringify(lines));
+    } catch {
+      // Ignored: cart persistence is best-effort only.
+    }
+  }
+
+  private isCartLine(value: unknown): value is CartLine {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+
+    const line = value as Partial<CartLine>;
+
+    return (
+      typeof line.quantity === 'number' &&
+      Number.isFinite(line.quantity) &&
+      line.quantity > 0 &&
+      this.isMenuItem(line.item)
+    );
+  }
+
+  private isMenuItem(value: unknown): value is MenuItem {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+
+    const item = value as Partial<MenuItem>;
+
+    return (
+      typeof item.id === 'number' &&
+      typeof item.name === 'string' &&
+      typeof item.price === 'number' &&
+      typeof item.imageUrl === 'string' &&
+      typeof item.category === 'string' &&
+      typeof item.description === 'string' &&
+      typeof item.inStock === 'boolean' &&
+      typeof item.pairing === 'string' &&
+      typeof item.season === 'string'
+    );
   }
 }

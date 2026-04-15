@@ -4,9 +4,8 @@
 	--font-display: 'Cormorant Garamond', 'Times New Roman', serif;
 	--font-body: 'Manrope', 'Segoe UI', sans-serif;
 	--ink: #211c19;
-	--mx-green: #006847;
 	--mx-red: #ce1126;
-	--mx-white: #fdfcf9;
+	--mx-white: #fff8f8;
 }
 
 * {
@@ -16,14 +15,16 @@
 html,
 body {
 	margin: 0;
+	width: 100%;
 	min-height: 100%;
 }
 
 body {
+	min-height: 100vh;
 	font-family: var(--font-body);
 	color: var(--ink);
 	background:
-		radial-gradient(circle at 12% 14%, rgb(0 104 71 / 18%), transparent 34%),
-		radial-gradient(circle at 90% 0%, rgb(206 17 38 / 18%), transparent 28%),
-		linear-gradient(160deg, #fffefb 0%, #fff9f7 48%, #fff8f8 100%);
+		radial-gradient(circle at 84% 10%, rgb(206 17 38 / 16%), transparent 34%),
+		radial-gradient(circle at 14% 78%, rgb(206 17 38 / 10%), transparent 35%),
+		linear-gradient(160deg, #fffefe 0%, #fff7f9 56%, #fff2f5 100%);
 }

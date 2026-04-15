@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, inject, OnDestroy, signal } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MenuItem } from '../../models/producto.model';
 import { CartLine, CarritoService } from '../../services/carrito.service';
 import { MenuService } from '../../services/producto.service';
@@ -31,27 +33,72 @@ interface DeliveryStep {
   detail: string;
 }
 
+type CheckoutStep = 1 | 2 | 3;
+type OrderStatus = 'recibido' | 'preparando' | 'en-camino' | 'entregado';
+
 @Component({
   selector: 'app-catalogo',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ProductoCard],
+  imports: [ProductoCard, ReactiveFormsModule, CurrencyPipe],
+  host: {
+    '(document:keydown.escape)': 'handleEscape()',
+  },
   templateUrl: './catalogo.html',
   styleUrl: './catalogo.css',
 })
-export class Catalogo {
+export class Catalogo implements OnDestroy {
+  private readonly favoritesStorageKey = 'casa-quetzal-favorites-v1';
   private readonly menuService = inject(MenuService);
   private readonly carritoService = inject(CarritoService);
   private readonly currencyFormatter = new Intl.NumberFormat('es-MX', {
     style: 'currency',
     currency: 'MXN',
   });
+  private readonly orderTimers: number[] = [];
 
   readonly menuItems = signal<MenuItem[]>([]);
   readonly errorMessage = signal('');
   readonly selectedCategory = signal('Todas');
   readonly onlyAvailable = signal(false);
   readonly searchTerm = signal('');
+  readonly favoriteIds = signal<number[]>(this.readFavoriteIds());
+  readonly selectedItem = signal<MenuItem | null>(null);
+  readonly checkoutOpen = signal(false);
+  readonly checkoutStep = signal<CheckoutStep>(1);
+  readonly orderStatus = signal<OrderStatus | null>(null);
+  readonly orderCode = signal('');
   readonly cartLines = this.carritoService.lineas;
+
+  readonly checkoutForm = new FormGroup({
+    customerName: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(3)],
+    }),
+    phone: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.pattern(/^[0-9]{10}$/)],
+    }),
+    address: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(8)],
+    }),
+    deliveryNotes: new FormControl('', { nonNullable: true }),
+    deliveryTime: new FormControl('Lo antes posible', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+    paymentMethod: new FormControl<'Tarjeta' | 'Transferencia' | 'Efectivo'>('Tarjeta', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+    cardLast4: new FormControl('', { nonNullable: true }),
+  });
+
+  readonly favoriteSet = computed(() => new Set(this.favoriteIds()));
+  readonly favoriteItems = computed(() => {
+    const favoriteIds = this.favoriteSet();
+    return this.menuItems().filter((item) => favoriteIds.has(item.id));
+  });
 
   readonly availableCount = computed(() =>
     this.menuItems().filter((dish) => dish.inStock).length
@@ -88,6 +135,64 @@ export class Catalogo {
   readonly mixologyItems = computed(() =>
     this.menuItems().filter((item) => item.category === 'Mixologia')
   );
+
+  readonly recommendedItems = computed(() => {
+    const items = this.menuItems();
+
+    if (items.length === 0) {
+      return [];
+    }
+
+    const favorites = this.favoriteSet();
+    const cartIds = new Set(this.cartLines().map((line) => line.item.id));
+    const cartCategory = this.cartLines()[0]?.item.category;
+    const selectedCategory = this.selectedCategory();
+
+    return items
+      .filter((item) => item.inStock && !cartIds.has(item.id))
+      .map((item) => {
+        let score = 0;
+
+        if (favorites.has(item.id)) {
+          score += 5;
+        }
+
+        if (cartCategory && item.category === cartCategory) {
+          score += 3;
+        }
+
+        if (selectedCategory !== 'Todas' && item.category === selectedCategory) {
+          score += 2;
+        }
+
+        if (item.category === 'Postres') {
+          score += 1;
+        }
+
+        return { item, score };
+      })
+      .sort((a, b) => b.score - a.score || a.item.price - b.item.price)
+      .slice(0, 4)
+      .map((entry) => entry.item);
+  });
+
+  readonly estimatedDeliveryMinutes = computed(() => 25 + this.cartItemsCount() * 3);
+  readonly orderStatusLabel = computed(() => {
+    const status = this.orderStatus();
+
+    switch (status) {
+      case 'recibido':
+        return 'Pedido recibido';
+      case 'preparando':
+        return 'Estamos preparando tu orden';
+      case 'en-camino':
+        return 'Tu pedido va en camino';
+      case 'entregado':
+        return 'Pedido entregado';
+      default:
+        return '';
+    }
+  });
 
   readonly insightCards: InsightCard[] = [
     {
@@ -191,6 +296,21 @@ export class Catalogo {
     });
   }
 
+  ngOnDestroy(): void {
+    this.clearOrderTimers();
+  }
+
+  handleEscape(): void {
+    if (this.selectedItem()) {
+      this.closeDetail();
+      return;
+    }
+
+    if (this.checkoutOpen()) {
+      this.closeCheckout();
+    }
+  }
+
   setCategory(category: string): void {
     this.selectedCategory.set(category);
   }
@@ -206,6 +326,32 @@ export class Catalogo {
 
   agregarAlCarrito(item: MenuItem): void {
     this.carritoService.agregar(item);
+  }
+
+  toggleFavorito(item: MenuItem): void {
+    this.favoriteIds.update((ids) => {
+      if (ids.includes(item.id)) {
+        const next = ids.filter((id) => id !== item.id);
+        this.persistFavoriteIds(next);
+        return next;
+      }
+
+      const next = [...ids, item.id];
+      this.persistFavoriteIds(next);
+      return next;
+    });
+  }
+
+  isFavorite(id: number): boolean {
+    return this.favoriteSet().has(id);
+  }
+
+  openDetail(item: MenuItem): void {
+    this.selectedItem.set(item);
+  }
+
+  closeDetail(): void {
+    this.selectedItem.set(null);
   }
 
   incrementar(line: CartLine): void {
@@ -224,6 +370,56 @@ export class Catalogo {
     this.carritoService.vaciar();
   }
 
+  openCheckout(): void {
+    if (this.cartLines().length === 0) {
+      return;
+    }
+
+    this.checkoutOpen.set(true);
+    this.checkoutStep.set(1);
+  }
+
+  closeCheckout(): void {
+    this.checkoutOpen.set(false);
+    this.checkoutStep.set(1);
+  }
+
+  previousCheckoutStep(): void {
+    const step = this.checkoutStep();
+
+    if (step > 1) {
+      this.checkoutStep.set((step - 1) as CheckoutStep);
+    }
+  }
+
+  nextCheckoutStep(): void {
+    const step = this.checkoutStep();
+
+    if (step === 1 && !this.validateStepOne()) {
+      return;
+    }
+
+    if (step === 2 && !this.validateStepTwo()) {
+      return;
+    }
+
+    if (step < 3) {
+      this.checkoutStep.set((step + 1) as CheckoutStep);
+    }
+  }
+
+  confirmOrder(): void {
+    if (!this.validateStepOne() || !this.validateStepTwo() || this.cartLines().length === 0) {
+      return;
+    }
+
+    this.orderCode.set(this.buildOrderCode());
+    this.orderStatus.set('recibido');
+    this.checkoutStep.set(3);
+    this.scheduleOrderProgress();
+    this.carritoService.vaciar();
+  }
+
   descargarTicket(): void {
     if (this.cartLines().length === 0) {
       return;
@@ -234,5 +430,91 @@ export class Catalogo {
 
   formatPrice(value: number): string {
     return this.currencyFormatter.format(value);
+  }
+
+  private validateStepOne(): boolean {
+    const controls = [
+      this.checkoutForm.controls.customerName,
+      this.checkoutForm.controls.phone,
+      this.checkoutForm.controls.address,
+      this.checkoutForm.controls.deliveryTime,
+    ];
+
+    controls.forEach((control) => {
+      control.markAsTouched();
+      control.updateValueAndValidity();
+    });
+
+    return controls.every((control) => control.valid);
+  }
+
+  private validateStepTwo(): boolean {
+    const paymentControl = this.checkoutForm.controls.paymentMethod;
+    const cardControl = this.checkoutForm.controls.cardLast4;
+
+    paymentControl.markAsTouched();
+    paymentControl.updateValueAndValidity();
+
+    if (paymentControl.value === 'Tarjeta') {
+      cardControl.markAsTouched();
+      const isValidLast4 = /^[0-9]{4}$/.test(cardControl.value);
+
+      cardControl.setErrors(isValidLast4 ? null : { cardLast4Invalid: true });
+      return paymentControl.valid && isValidLast4;
+    }
+
+    cardControl.setErrors(null);
+    return paymentControl.valid;
+  }
+
+  private scheduleOrderProgress(): void {
+    this.clearOrderTimers();
+
+    this.orderTimers.push(
+      window.setTimeout(() => this.orderStatus.set('preparando'), 3000),
+      window.setTimeout(() => this.orderStatus.set('en-camino'), 7000),
+      window.setTimeout(() => this.orderStatus.set('entregado'), 12000)
+    );
+  }
+
+  private clearOrderTimers(): void {
+    for (const timer of this.orderTimers) {
+      clearTimeout(timer);
+    }
+
+    this.orderTimers.length = 0;
+  }
+
+  private buildOrderCode(): string {
+    const seed = Math.random().toString(36).slice(2, 8).toUpperCase();
+    return `CQ-${seed}`;
+  }
+
+  private readFavoriteIds(): number[] {
+    try {
+      const raw = localStorage.getItem(this.favoritesStorageKey);
+
+      if (!raw) {
+        return [];
+      }
+
+      const parsed: unknown = JSON.parse(raw);
+
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+
+      return parsed.filter((id): id is number => typeof id === 'number' && Number.isFinite(id));
+    } catch {
+      return [];
+    }
+  }
+
+  private persistFavoriteIds(ids: number[]): void {
+    try {
+      localStorage.setItem(this.favoritesStorageKey, JSON.stringify(ids));
+    } catch {
+      // Ignored: favorites persistence is best-effort only.
+    }
   }
 }

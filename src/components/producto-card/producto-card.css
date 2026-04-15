@@ -1,10 +1,10 @@
 .card {
-  border: 1px solid #dfd8d1;
+  border: 1px solid #ead4da;
   border-radius: 18px;
   overflow: hidden;
-  background: linear-gradient(180deg, #fffefc 0%, #fffaf6 100%);
+  background: linear-gradient(180deg, #fffefe 0%, #fff5f7 100%);
   display: grid;
-  box-shadow: 0 12px 26px rgb(45 35 28 / 10%);
+  box-shadow: 0 12px 26px rgb(61 34 44 / 11%);
   transition: transform 0.25s ease;
 }
 
@@ -17,7 +17,7 @@
   height: 230px;
   object-fit: cover;
   display: block;
-  background: linear-gradient(135deg, #f2ede6 0%, #e9e4dc 100%);
+  background: linear-gradient(135deg, #f8eef1 0%, #efe4e8 100%);
 }
 
 .body {
@@ -26,14 +26,21 @@
   gap: 0.45rem;
 }
 
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+}
+
 .tag {
   margin: 0;
   display: inline-flex;
   width: fit-content;
   border-radius: 999px;
   padding: 0.3rem 0.65rem;
-  background: #e6f3ec;
-  color: #0e4a34;
+  background: #fae9ee;
+  color: #8c1b35;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -51,12 +58,12 @@
   margin: 0;
   font-family: var(--font-display);
   font-size: 1.42rem;
-  color: #154432;
+  color: #531324;
 }
 
 .price {
   font-weight: 700;
-  color: #ce1126;
+  color: #b21e3d;
 }
 
 .meta {
@@ -82,15 +89,44 @@
   margin: 0;
   font-size: 0.82rem;
   font-weight: 600;
-  color: #166534;
+  color: #8c1b35;
 }
 
 .stock-out {
-  color: #dc2626;
+  color: #b10f31;
 }
 
 .actions {
   margin-top: 0.3rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.fav-btn,
+.ghost-btn {
+  border-radius: 10px;
+  padding: 0.5rem 0.65rem;
+  font-weight: 700;
+  font: inherit;
+  cursor: pointer;
+}
+
+.fav-btn {
+  border: 1px solid #dca2b1;
+  background: #fff4f7;
+  color: #8c1b35;
+}
+
+.fav-btn.active {
+  border-color: #9f1634;
+  background: #9f1634;
+  color: #fff;
+}
+
+.ghost-btn {
+  border: 1px solid #e2c2cb;
+  background: #fff;
+  color: #672234;
 }
 
 .add-btn {
@@ -98,14 +134,14 @@
   border: 0;
   border-radius: 10px;
   padding: 0.6rem 0.75rem;
-  background: linear-gradient(100deg, #006847 0%, #138f63 100%);
+  background: linear-gradient(100deg, #9f1634 0%, #cf3556 100%);
   color: #fff;
   font-weight: 700;
   cursor: pointer;
 }
 
 .add-btn:disabled {
-  background: #d6ddd9;
+  background: #e3d8dc;
   color: #5f6562;
   cursor: not-allowed;
 }

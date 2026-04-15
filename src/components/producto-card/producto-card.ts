@@ -11,7 +11,10 @@ import { MenuItem } from '../../models/producto.model';
 })
 export class ProductoCard {
   readonly item = input.required<MenuItem>();
+  readonly isFavorite = input(false);
   readonly add = output<MenuItem>();
+  readonly toggleFavorite = output<MenuItem>();
+  readonly view = output<MenuItem>();
 
   readonly availabilityText = computed(() =>
     this.item().inStock ? 'Disponible esta noche' : 'Cupo completo por hoy'
@@ -23,5 +26,13 @@ export class ProductoCard {
     }
 
     this.add.emit(this.item());
+  }
+
+  onToggleFavorite(): void {
+    this.toggleFavorite.emit(this.item());
+  }
+
+  onView(): void {
+    this.view.emit(this.item());
   }
 }

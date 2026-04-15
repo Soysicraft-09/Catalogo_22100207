@@ -1,19 +1,44 @@
 import { Injectable } from '@angular/core';
-import { from, Observable } from 'rxjs';
+import { defer, from, Observable, of } from 'rxjs';
+import { catchError, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 import { MenuItem } from '../models/producto.model';
 
 @Injectable({ providedIn: 'root' })
 export class MenuService {
+  private readonly cacheStorageKey = 'casa-quetzal-menu-cache-v1';
+  private readonly menuCache = this.readMenuCache();
+  private request$: Observable<MenuItem[]> | null = null;
+
   getSeasonMenu(): Observable<MenuItem[]> {
-    return from(
-      fetch('/productos.xml')
-        .then((response) => response.text())
-        .then((xmlText) => {
-          const parsed = this.parseMenuWithDom(xmlText);
-          return parsed.length > 0 ? parsed : this.getFallbackMenu();
-        })
-        .catch(() => this.getFallbackMenu())
+    if (this.menuCache.length > 0) {
+      return of(this.menuCache);
+    }
+
+    if (this.request$) {
+      return this.request$;
+    }
+
+    this.request$ = defer(() => from(fetch('/productos.xml'))).pipe(
+      switchMap((response) => {
+        if (!response.ok) {
+          throw new Error('No se pudo leer productos.xml');
+        }
+
+        return from(response.text());
+      }),
+      map((xmlText) => {
+        const parsed = this.parseMenuWithDom(xmlText);
+        return parsed.length > 0 ? parsed : this.getFallbackMenu();
+      }),
+      catchError(() => of(this.getFallbackMenu())),
+      tap((items) => {
+        this.menuCache.splice(0, this.menuCache.length, ...items);
+        this.writeMenuCache(items);
+      }),
+      shareReplay({ bufferSize: 1, refCount: false })
     );
+
+    return this.request$;
   }
 
   private parseMenuWithDom(xmlText: string): MenuItem[] {
@@ -54,13 +79,61 @@ export class MenuService {
     return node.getElementsByTagName(tagName)[0]?.textContent?.trim() ?? '';
   }
 
+  private readMenuCache(): MenuItem[] {
+    try {
+      const raw = localStorage.getItem(this.cacheStorageKey);
+
+      if (!raw) {
+        return [];
+      }
+
+      const parsed: unknown = JSON.parse(raw);
+
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+
+      return parsed.filter((item): item is MenuItem => this.isMenuItem(item));
+    } catch {
+      return [];
+    }
+  }
+
+  private writeMenuCache(items: MenuItem[]): void {
+    try {
+      localStorage.setItem(this.cacheStorageKey, JSON.stringify(items));
+    } catch {
+      // Ignored: cache persistence is best-effort only.
+    }
+  }
+
+  private isMenuItem(item: unknown): item is MenuItem {
+    if (!item || typeof item !== 'object') {
+      return false;
+    }
+
+    const candidate = item as Partial<MenuItem>;
+
+    return (
+      typeof candidate.id === 'number' &&
+      typeof candidate.name === 'string' &&
+      typeof candidate.price === 'number' &&
+      typeof candidate.imageUrl === 'string' &&
+      typeof candidate.category === 'string' &&
+      typeof candidate.description === 'string' &&
+      typeof candidate.inStock === 'boolean' &&
+      typeof candidate.pairing === 'string' &&
+      typeof candidate.season === 'string'
+    );
+  }
+
   private getFallbackMenu(): MenuItem[] {
     return [
       {
         id: 1,
         name: 'Tostada de Atun Aleta Azul',
         price: 275,
-        imageUrl: '/img/tenis-running-pro.png',
+        imageUrl: '/img/Tostada-de-Atun-Aleta-Azul.webp',
         category: 'Entradas',
         description: 'Atun marinado en citricos, aguacate tatemado y brotes de cilantro criollo.',
         inStock: true,
@@ -71,7 +144,7 @@ export class MenuService {
         id: 2,
         name: 'Aguachile Negro de Camaron',
         price: 295,
-        imageUrl: '/img/sudadera-oversize.png',
+        imageUrl: '/img/Aguachile-Negro-de-Camaron.webp',
         category: 'Entradas',
         description: 'Camaron curado, pepino encurtido y emulsiones de chile chilhuacle negro.',
         inStock: true,
@@ -82,7 +155,7 @@ export class MenuService {
         id: 3,
         name: 'Sope de Huitlacoche y Queso de Oveja',
         price: 260,
-        imageUrl: '/img/playera-blanca.png',
+        imageUrl: '/img/Sope-de-Huitlacoche-y-Queso-de-Oveja.webp',
         category: 'Entradas',
         description: 'Masa azul crocante, salsa de tomatillo tatemado y brotes de temporada.',
         inStock: true,
@@ -93,7 +166,7 @@ export class MenuService {
         id: 4,
         name: 'Crema de Elote Ahumado',
         price: 240,
-        imageUrl: '/img/jeans-slim-azul.png',
+        imageUrl: '/img/Crema-de-Elote-Ahumado.webp',
         category: 'Entradas',
         description: 'Espuma de queso Cotija y aceite de chile ancho para una entrada sedosa.',
         inStock: true,
@@ -104,7 +177,7 @@ export class MenuService {
         id: 5,
         name: 'Taco de Lechon Confitado',
         price: 315,
-        imageUrl: '/img/tenis-urban-street.png',
+        imageUrl: '/img/Taco-de-Lechon-Confitado.webp',
         category: 'Entradas',
         description: 'Lechon cocido a baja temperatura, cebolla curtida y pure de frijol ayocote.',
         inStock: true,
@@ -115,7 +188,7 @@ export class MenuService {
         id: 6,
         name: 'Rib Eye en Costra de Cacao',
         price: 640,
-        imageUrl: '/img/chaqueta-rompevientos.png',
+        imageUrl: '/img/Rib-Eye-en-Costra-de-Cacao.webp',
         category: 'Fuertes',
         description: 'Corte premium, pure de camote rostizado y demi-glace de chile pasilla.',
         inStock: true,
@@ -126,7 +199,7 @@ export class MenuService {
         id: 7,
         name: 'Pesca del Dia al Pipian Verde',
         price: 520,
-        imageUrl: '/img/tenis-running-pro.png',
+        imageUrl: '/img/Pesca-del-Dia-al-Pipian-Verde.webp',
         category: 'Fuertes',
         description: 'Filete sellado con vegetales baby y pipian de pepita y hierbas de huerto.',
         inStock: true,
@@ -137,7 +210,7 @@ export class MenuService {
         id: 8,
         name: 'Pato en Mole de Ciruela',
         price: 590,
-        imageUrl: '/img/sudadera-oversize.png',
+        imageUrl: '/img/Pato-en-Mole-de-Ciruela.webp',
         category: 'Fuertes',
         description: 'Pechuga sellada, mole de ciruela especiado y pure de coliflor rostizada.',
         inStock: true,
@@ -148,7 +221,7 @@ export class MenuService {
         id: 9,
         name: 'Arroz Meloso de Mariscos',
         price: 560,
-        imageUrl: '/img/playera-blanca.png',
+        imageUrl: '/img/Arroz-Meloso-de-Mariscos.webp',
         category: 'Fuertes',
         description: 'Caldo concentrado de mar, azafran, pulpo rostizado y camaron del Pacifico.',
         inStock: true,
@@ -159,7 +232,7 @@ export class MenuService {
         id: 10,
         name: 'Negroni de Guayaba y Romero',
         price: 230,
-        imageUrl: '/img/jeans-slim-azul.png',
+        imageUrl: '/img/Negroni-de-Guayaba-y-Romero.webp',
         category: 'Mixologia',
         description: 'Gin botanico, bitter italiano y cordial de guayaba con romero flameado.',
         inStock: true,
@@ -170,7 +243,7 @@ export class MenuService {
         id: 11,
         name: 'Margarita de Jamaica Ahumada',
         price: 220,
-        imageUrl: '/img/tenis-urban-street.png',
+        imageUrl: '/img/Margarita-de-Jamaica-Ahumada.webp',
         category: 'Mixologia',
         description: 'Tequila reposado, licor de naranja y jarabe de jamaica con sal de gusano.',
         inStock: true,
@@ -181,7 +254,7 @@ export class MenuService {
         id: 12,
         name: 'Mousse de Chocolate Oaxaqueno',
         price: 210,
-        imageUrl: '/img/chaqueta-rompevientos.png',
+        imageUrl: '/img/Mousse-de-Chocolate-Oaxaqueno.webp',
         category: 'Postres',
         description: 'Cacao de origen, crumble de cacao nibs y helado artesanal de vainilla.',
         inStock: true,
@@ -192,7 +265,7 @@ export class MenuService {
         id: 13,
         name: 'Carajillo de Maiz Tostado',
         price: 215,
-        imageUrl: '/img/tenis-running-pro.png',
+        imageUrl: '/img/Carajillo-de-Maiz-Tostado.webp',
         category: 'Mixologia',
         description: 'Licor de cafe, destilado de maiz y espuma ligera de canela.',
         inStock: true,
@@ -203,7 +276,7 @@ export class MenuService {
         id: 14,
         name: 'Xoconostle Spritz Sin Alcohol',
         price: 185,
-        imageUrl: '/img/sudadera-oversize.png',
+        imageUrl: '/img/Xoconostle-Spritz-Sin-Alcohol.webp',
         category: 'Mixologia',
         description: 'Xoconostle, toronja y agua mineral con aceite de limon mexicano.',
         inStock: true,
