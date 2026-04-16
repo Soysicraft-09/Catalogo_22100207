@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
 import { Catalogo } from './catalogo';
-import { MenuService } from '../../services/producto.service';
+import { ProductService } from '../../services/producto.service';
 
 // Verifica que Catalogo se pueda instanciar con dependencias simuladas.
 describe('Catalogo', () => {
@@ -15,8 +15,8 @@ describe('Catalogo', () => {
       imports: [Catalogo],
       providers: [
         {
-          provide: MenuService,
-          useValue: { getSeasonMenu: () => of([]) },
+          provide: ProductService,
+          useValue: { getAll: () => of([]) },
         },
       ],
     })

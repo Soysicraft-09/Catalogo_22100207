@@ -1,36 +1,43 @@
-import { Injectable } from '@angular/core';
-import { defer, from, Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
 import { catchError, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 import { MenuItem } from '../models/producto.model';
 
 @Injectable({ providedIn: 'root' })
-export class MenuService {
+export class ProductService {
+  private readonly http = inject(HttpClient);
   private readonly cacheStorageKey = 'casa-quetzal-menu-cache-v1';
+  private readonly apiUrl = 'http://localhost:3000/api/productos';
   private readonly menuCache = this.readMenuCache();
   private request$: Observable<MenuItem[]> | null = null;
 
-  getSeasonMenu(): Observable<MenuItem[]> {
-    if (this.menuCache.length > 0) {
-      return of(this.menuCache);
-    }
-
+  getAll(): Observable<MenuItem[]> {
     if (this.request$) {
       return this.request$;
     }
 
-    this.request$ = defer(() => from(fetch('/productos.xml'))).pipe(
-      switchMap((response) => {
-        if (!response.ok) {
-          throw new Error('No se pudo leer productos.xml');
+    this.request$ = this.http.get<MenuItem[]>(this.apiUrl).pipe(
+      switchMap((apiItems) => {
+        if (Array.isArray(apiItems) && apiItems.every((item) => this.isMenuItem(item))) {
+          return of(apiItems);
         }
 
-        return from(response.text());
+        throw new Error('La API devolvio datos invalidos');
       }),
-      map((xmlText) => {
-        const parsed = this.parseMenuWithDom(xmlText);
-        return parsed.length > 0 ? parsed : this.getFallbackMenu();
+      catchError(() => {
+        if (this.menuCache.length > 0) {
+          return of(this.menuCache);
+        }
+
+        return this.http.get('/productos.xml', { responseType: 'text' }).pipe(
+          map((xmlText) => {
+            const parsed = this.parseMenuWithDom(xmlText);
+            return parsed.length > 0 ? parsed : this.getFallbackMenu();
+          }),
+          catchError(() => of(this.getFallbackMenu()))
+        );
       }),
-      catchError(() => of(this.getFallbackMenu())),
       tap((items) => {
         this.menuCache.splice(0, this.menuCache.length, ...items);
         this.writeMenuCache(items);

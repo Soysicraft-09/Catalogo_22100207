@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, OnDestroy, signal
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MenuItem } from '../../models/producto.model';
 import { CartLine, CarritoService } from '../../services/carrito.service';
-import { MenuService } from '../../services/producto.service';
+import { ProductService } from '../../services/producto.service';
 import { ProductoCard } from '../producto-card/producto-card';
 
 interface InsightCard {
@@ -48,7 +48,7 @@ type OrderStatus = 'recibido' | 'preparando' | 'en-camino' | 'entregado';
 })
 export class Catalogo implements OnDestroy {
   private readonly favoritesStorageKey = 'casa-quetzal-favorites-v1';
-  private readonly menuService = inject(MenuService);
+  private readonly productService = inject(ProductService);
   private readonly carritoService = inject(CarritoService);
   private readonly currencyFormatter = new Intl.NumberFormat('es-MX', {
     style: 'currency',
@@ -285,7 +285,7 @@ export class Catalogo implements OnDestroy {
   ];
 
   constructor() {
-    this.menuService.getSeasonMenu().subscribe({
+    this.productService.getAll().subscribe({
       next: (items) => {
         this.menuItems.set(items);
       },
