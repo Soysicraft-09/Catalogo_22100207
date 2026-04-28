@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Merriweather:wght@700&display=swap');
 
 :root {
-	--font-display: 'Cormorant Garamond', 'Times New Roman', serif;
-	--font-body: 'Manrope', 'Segoe UI', sans-serif;
-	--ink: #211c19;
-	--mx-red: #ce1126;
-	--mx-white: #fff8f8;
+	--font-display: 'Merriweather', Georgia, serif;
+	--font-body: 'Inter', 'Segoe UI', sans-serif;
+	--ink: #172033;
+	--mx-red: #1f4fd6;
+	--mx-white: #f8fafc;
 }
 
 * {
@@ -24,7 +24,7 @@ body {
 	font-family: var(--font-body);
 	color: var(--ink);
 	background:
-		radial-gradient(circle at 84% 10%, rgb(206 17 38 / 16%), transparent 34%),
-		radial-gradient(circle at 14% 78%, rgb(206 17 38 / 10%), transparent 35%),
-		linear-gradient(160deg, #fffefe 0%, #fff7f9 56%, #fff2f5 100%);
+		radial-gradient(circle at 85% 8%, rgb(31 79 214 / 9%), transparent 30%),
+		radial-gradient(circle at 14% 76%, rgb(15 23 42 / 6%), transparent 28%),
+		linear-gradient(160deg, #f9fafb 0%, #eef2f7 54%, #e9eef5 100%);
 }

@@ -1,8 +1,11 @@
 import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, OnDestroy, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { MenuItem } from '../../models/producto.model';
 import { CartLine, CarritoService } from '../../services/carrito.service';
+import { PaypalService } from '../../services/paypal.service';
 import { ProductService } from '../../services/producto.service';
 import { ProductoCard } from '../producto-card/producto-card';
 
@@ -35,6 +38,7 @@ interface DeliveryStep {
 
 type CheckoutStep = 1 | 2 | 3;
 type OrderStatus = 'recibido' | 'preparando' | 'en-camino' | 'entregado';
+type PaymentMethod = 'Tarjeta' | 'Transferencia' | 'Efectivo' | 'PayPal';
 
 @Component({
   selector: 'app-catalogo',
@@ -47,14 +51,16 @@ type OrderStatus = 'recibido' | 'preparando' | 'en-camino' | 'entregado';
   styleUrl: './catalogo.css',
 })
 export class Catalogo implements OnDestroy {
-  private readonly favoritesStorageKey = 'casa-quetzal-favorites-v1';
+  private readonly favoritesStorageKey = 'poke-market-favorites-v1';
   private readonly productService = inject(ProductService);
   private readonly carritoService = inject(CarritoService);
+  private readonly paypalService = inject(PaypalService);
   private readonly currencyFormatter = new Intl.NumberFormat('es-MX', {
     style: 'currency',
     currency: 'MXN',
   });
   private readonly orderTimers: number[] = [];
+  private paypalSdkPromise: Promise<void> | null = null;
 
   readonly menuItems = signal<MenuItem[]>([]);
   readonly errorMessage = signal('');
@@ -67,7 +73,11 @@ export class Catalogo implements OnDestroy {
   readonly checkoutStep = signal<CheckoutStep>(1);
   readonly orderStatus = signal<OrderStatus | null>(null);
   readonly orderCode = signal('');
+  readonly paypalMessage = signal('');
+  readonly paypalLoading = signal(false);
   readonly cartLines = this.carritoService.lineas;
+  readonly paypalClientId = environment.paypalClientId;
+  readonly isPaypalMethod = computed(() => this.checkoutForm.controls.paymentMethod.value === 'PayPal');
 
   readonly checkoutForm = new FormGroup({
     customerName: new FormControl('', {
@@ -83,11 +93,11 @@ export class Catalogo implements OnDestroy {
       validators: [Validators.required, Validators.minLength(8)],
     }),
     deliveryNotes: new FormControl('', { nonNullable: true }),
-    deliveryTime: new FormControl('Lo antes posible', {
+    deliveryTime: new FormControl('Despacho inmediato', {
       nonNullable: true,
       validators: [Validators.required],
     }),
-    paymentMethod: new FormControl<'Tarjeta' | 'Transferencia' | 'Efectivo'>('Tarjeta', {
+    paymentMethod: new FormControl<PaymentMethod>('Tarjeta', {
       nonNullable: true,
       validators: [Validators.required],
     }),
@@ -133,7 +143,7 @@ export class Catalogo implements OnDestroy {
   });
 
   readonly mixologyItems = computed(() =>
-    this.menuItems().filter((item) => item.category === 'Mixologia')
+    this.menuItems().filter((item) => item.category === 'Destacadas')
   );
 
   readonly recommendedItems = computed(() => {
@@ -165,7 +175,7 @@ export class Catalogo implements OnDestroy {
           score += 2;
         }
 
-        if (item.category === 'Postres') {
+        if (item.category === 'Legendarias') {
           score += 1;
         }
 
@@ -176,19 +186,19 @@ export class Catalogo implements OnDestroy {
       .map((entry) => entry.item);
   });
 
-  readonly estimatedDeliveryMinutes = computed(() => 25 + this.cartItemsCount() * 3);
+  readonly estimatedDispatchHours = computed(() => 12 + this.cartItemsCount() * 2);
   readonly orderStatusLabel = computed(() => {
     const status = this.orderStatus();
 
     switch (status) {
       case 'recibido':
-        return 'Pedido recibido';
+        return 'Orden recibida';
       case 'preparando':
-        return 'Estamos preparando tu orden';
+        return 'Estamos preparando tu paquete';
       case 'en-camino':
-        return 'Tu pedido va en camino';
+        return 'Tu envio va en camino';
       case 'entregado':
-        return 'Pedido entregado';
+        return 'Orden entregada';
       default:
         return '';
     }
@@ -196,91 +206,91 @@ export class Catalogo implements OnDestroy {
 
   readonly insightCards: InsightCard[] = [
     {
-      value: '12.2%',
-      title: 'Peso del sector restaurantero en Mexico',
-      detail: 'CANIRAC 2023 confirma un crecimiento sostenido de experiencias premium.',
+      value: '151+',
+      title: 'Cartas base en el set original',
+      detail: 'La nostalgia del Base Set sigue moviendo compras y coleccionismo.',
     },
     {
-      value: '95%+',
-      title: 'Penetracion digital en segmento objetivo C+ y A/B',
-      detail: 'Asociacion de Internet MX 2023 muestra alta adopcion movil y consumo visual.',
+      value: '24h',
+      title: 'Actualizacion de stock y precios',
+      detail: 'El inventario se revisa diario para evitar sobreventa y mejorar confianza.',
     },
     {
-      value: '30%',
-      title: 'Gasto destinado a esparcimiento y experiencias',
-      detail: 'INEGI 2022 respalda la viabilidad de tickets altos cuando hay diferenciacion.',
+      value: '100%',
+      title: 'Verificacion visual de cartas',
+      detail: 'Cada carta se publica con fotos reales y descripcion de condicion.',
     },
   ];
 
   readonly pillars: ExperiencePillar[] = [
     {
-      title: 'Cocina de autor con raiz mexicana',
+      title: 'Cartas originales y verificadas',
       description:
-        'Cada plato cuenta una historia regional: tecnica contemporanea, ingredientes de origen y montaje editorial.',
+        'Revisamos bordes, centering y superficie para ofrecer cartas listas para coleccion o juego.',
     },
     {
-      title: 'Mixologia con identidad local',
+      title: 'Catalogo por rareza y expansion',
       description:
-        'La barra integra destilados nacionales, frutas de temporada y perfiles aromaticos que armonizan cada tiempo.',
+        'Filtra por comunes, holo, full art, trainer y legendarias en segundos.',
     },
     {
-      title: 'Diseno visual premium para conversion',
+      title: 'Compra rapida y segura',
       description:
-        'El menu digital esta pensado para capturar atencion, mejorar decision de compra y aumentar pedidos online.',
+        'Checkout simple, tracking de orden y ticket en XML para control de compra.',
     },
   ];
 
   readonly chefMilestones: ChefMilestone[] = [
     {
-      year: '2014',
-      title: 'Origen del proyecto',
+      year: '2023',
+      title: 'Inicio de la tienda',
       detail:
-        'El chef inicia una investigacion culinaria por Oaxaca, Puebla y Yucatan para reinterpretar tecnicas tradicionales.',
+        'Comenzamos vendiendo cartas sueltas de colecciones modernas y clasicas en linea.',
     },
     {
-      year: '2019',
-      title: 'Nacimiento de Casa Quetzal',
+      year: '2025',
+      title: 'Expansion del inventario',
       detail:
-        'Arranca el concepto de alta cocina mexicana enfocada en experiencia, fotografia y narrativa culinaria.',
+        'Se agregan cartas de sets japoneses, promos y productos sellados de alta demanda.',
     },
     {
       year: '2026',
-      title: 'Formato digital tipo delivery',
+      title: 'Operacion digital en Mexico',
       detail:
-        'El negocio evoluciona a modelo ficticio de pedidos en linea, sin ubicacion fisica abierta al publico.',
+        'Nos enfocamos en venta online con envios nacionales y empaque de proteccion premium.',
     },
   ];
 
   readonly commitments: Commitment[] = [
     {
-      title: 'Kilometro Cero',
+      title: 'Autenticidad primero',
       description:
-        'Priorizamos proveedores locales para reducir huella de carbono y fortalecer cadenas de valor regional.',
+        'Rechazamos reproducciones y listamos solo cartas verificadas por nuestro equipo.',
     },
     {
-      title: 'Transparencia legal y comercial',
+      title: 'Transparencia comercial',
       description:
-        'Mostramos precios en MXN con impuestos incluidos y mantenemos politicas claras de privacidad.',
+        'Publicamos precios finales en MXN, estado de carta y fotos sin filtros agresivos.',
     },
     {
-      title: 'Menu digital vivo',
+      title: 'Catalogo vivo',
       description:
-        'Actualizamos disponibilidad y costo por inflacion de insumos gourmet sin sacrificar claridad para el comensal.',
+        'El stock y las ofertas se actualizan en tiempo real segun disponibilidad real.',
     },
   ];
 
   readonly deliverySteps: DeliveryStep[] = [
     {
-      title: '1. Explora y filtra el menu',
-      detail: 'Navega por categorias, busca ingredientes y revisa maridajes sugeridos.',
+      title: '1. Explora y filtra cartas',
+      detail: 'Busca por expansion, tipo y rareza para encontrar tu objetivo rapido.',
     },
     {
-      title: '2. Elige tu experiencia',
-      detail: 'Combina entradas, fuertes y mixologia para armar una cena gourmet en casa.',
+      title: '2. Arma tu carrito',
+      detail: 'Combina cartas para deck competitivo o piezas clave de coleccion.',
     },
     {
-      title: '3. Pide por app de delivery',
-      detail: 'Nuestro modelo opera por plataformas tipo Uber Eats y aliados de ultima milla.',
+      title: '3. Recibe tu envio',
+      detail: 'Despachamos con empaque protegido y numero de seguimiento.',
     },
   ];
 
@@ -290,7 +300,7 @@ export class Catalogo implements OnDestroy {
         this.menuItems.set(items);
       },
       error: () => {
-        this.errorMessage.set('No fue posible cargar el menu gourmet en este momento.');
+        this.errorMessage.set('No fue posible cargar el catalogo Pokemon en este momento.');
         this.menuItems.set([]);
       },
     });
@@ -375,6 +385,7 @@ export class Catalogo implements OnDestroy {
       return;
     }
 
+    this.resetOrderState();
     this.checkoutOpen.set(true);
     this.checkoutStep.set(1);
   }
@@ -382,6 +393,7 @@ export class Catalogo implements OnDestroy {
   closeCheckout(): void {
     this.checkoutOpen.set(false);
     this.checkoutStep.set(1);
+    this.resetOrderState();
   }
 
   previousCheckoutStep(): void {
@@ -404,7 +416,12 @@ export class Catalogo implements OnDestroy {
     }
 
     if (step < 3) {
-      this.checkoutStep.set((step + 1) as CheckoutStep);
+      const nextStep = (step + 1) as CheckoutStep;
+      this.checkoutStep.set(nextStep);
+
+      if (nextStep === 3) {
+        this.handleStepThreeEntry();
+      }
     }
   }
 
@@ -413,11 +430,12 @@ export class Catalogo implements OnDestroy {
       return;
     }
 
-    this.orderCode.set(this.buildOrderCode());
-    this.orderStatus.set('recibido');
-    this.checkoutStep.set(3);
-    this.scheduleOrderProgress();
-    this.carritoService.vaciar();
+    if (this.isPaypalMethod()) {
+      this.paypalMessage.set('Usa el boton de PayPal para completar el pago.');
+      return;
+    }
+
+    this.completeOrder();
   }
 
   descargarTicket(): void {
@@ -467,6 +485,117 @@ export class Catalogo implements OnDestroy {
     return paymentControl.valid;
   }
 
+  private handleStepThreeEntry(): void {
+    if (!this.isPaypalMethod()) {
+      this.paypalMessage.set('');
+      return;
+    }
+
+    if (!this.paypalClientId) {
+      this.paypalMessage.set('Falta configurar paypalClientId en src/environments/environment.ts');
+      return;
+    }
+
+    this.paypalMessage.set('');
+    window.setTimeout(() => {
+      void this.renderPaypalButtons();
+    });
+  }
+
+  private async renderPaypalButtons(): Promise<void> {
+    if (!this.checkoutOpen() || this.checkoutStep() !== 3 || !this.isPaypalMethod() || this.orderCode()) {
+      return;
+    }
+
+    const container = document.getElementById('paypal-buttons');
+
+    if (!container) {
+      return;
+    }
+
+    container.innerHTML = '';
+
+    try {
+      await this.loadPaypalSdk();
+
+      if (!window.paypal) {
+        this.paypalMessage.set('No fue posible cargar el SDK de PayPal.');
+        return;
+      }
+
+      await window.paypal
+        .Buttons({
+          createOrder: async () => {
+            this.paypalLoading.set(true);
+            const order = await firstValueFrom(
+              this.paypalService.createOrder({
+                total: this.cartTotal(),
+                currency: environment.currency,
+              })
+            );
+            this.paypalLoading.set(false);
+            return order.id;
+          },
+          onApprove: async (data) => {
+            this.paypalLoading.set(true);
+            this.paypalMessage.set('');
+
+            await firstValueFrom(this.paypalService.captureOrder(data.orderID));
+
+            this.paypalLoading.set(false);
+            this.completeOrder();
+          },
+          onCancel: () => {
+            this.paypalLoading.set(false);
+            this.paypalMessage.set('El pago fue cancelado. Puedes intentarlo nuevamente.');
+          },
+          onError: () => {
+            this.paypalLoading.set(false);
+            this.paypalMessage.set('Ocurrio un error al procesar el pago con PayPal.');
+          },
+        })
+        .render('#paypal-buttons');
+    } catch {
+      this.paypalLoading.set(false);
+      this.paypalMessage.set('No fue posible iniciar PayPal. Revisa credenciales y backend.');
+    }
+  }
+
+  private loadPaypalSdk(): Promise<void> {
+    if (window.paypal) {
+      return Promise.resolve();
+    }
+
+    if (this.paypalSdkPromise) {
+      return this.paypalSdkPromise;
+    }
+
+    this.paypalSdkPromise = new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      const sdkParams = new URLSearchParams({
+        'client-id': this.paypalClientId,
+        currency: environment.currency,
+        locale: environment.paypalLocale,
+      });
+
+      script.src = `https://www.paypal.com/sdk/js?${sdkParams.toString()}`;
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('No se pudo cargar el SDK de PayPal'));
+      document.head.append(script);
+    });
+
+    return this.paypalSdkPromise;
+  }
+
+  private completeOrder(): void {
+    this.orderCode.set(this.buildOrderCode());
+    this.orderStatus.set('recibido');
+    this.checkoutStep.set(3);
+    this.scheduleOrderProgress();
+    this.carritoService.vaciar();
+  }
+
   private scheduleOrderProgress(): void {
     this.clearOrderTimers();
 
@@ -487,7 +616,7 @@ export class Catalogo implements OnDestroy {
 
   private buildOrderCode(): string {
     const seed = Math.random().toString(36).slice(2, 8).toUpperCase();
-    return `CQ-${seed}`;
+    return `PK-${seed}`;
   }
 
   private readFavoriteIds(): number[] {
@@ -516,5 +645,13 @@ export class Catalogo implements OnDestroy {
     } catch {
       // Ignored: favorites persistence is best-effort only.
     }
+  }
+
+  private resetOrderState(): void {
+    this.orderCode.set('');
+    this.orderStatus.set(null);
+    this.paypalMessage.set('');
+    this.paypalLoading.set(false);
+    this.clearOrderTimers();
   }
 }

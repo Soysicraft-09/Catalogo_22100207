@@ -1,11 +1,11 @@
-import { CurrencyPipe, NgOptimizedImage } from '@angular/common';
+import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { MenuItem } from '../../models/producto.model';
 
 @Component({
   selector: 'app-producto-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CurrencyPipe, NgOptimizedImage],
+  imports: [CurrencyPipe],
   templateUrl: './producto-card.html',
   styleUrl: './producto-card.css',
 })
@@ -17,7 +17,7 @@ export class ProductoCard {
   readonly view = output<MenuItem>();
 
   readonly availabilityText = computed(() =>
-    this.item().inStock ? 'Disponible esta noche' : 'Cupo completo por hoy'
+    this.item().inStock ? 'Disponible para envio' : 'Agotada temporalmente'
   );
 
   onAdd(): void {

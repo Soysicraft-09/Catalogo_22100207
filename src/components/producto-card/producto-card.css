@@ -1,10 +1,10 @@
 .card {
-  border: 1px solid #ead4da;
+  border: 1px solid #d8e1ef;
   border-radius: 18px;
   overflow: hidden;
-  background: linear-gradient(180deg, #fffefe 0%, #fff5f7 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
   display: grid;
-  box-shadow: 0 12px 26px rgb(61 34 44 / 11%);
+  box-shadow: 0 12px 26px rgb(15 23 42 / 8%);
   transition: transform 0.25s ease;
 }
 
@@ -14,10 +14,24 @@
 
 .img {
   width: 100%;
-  height: 230px;
-  object-fit: cover;
+  aspect-ratio: 63 / 88;
+  height: auto;
+  max-height: 320px;
+  object-fit: contain;
+  padding: 0.85rem;
+  box-sizing: border-box;
   display: block;
-  background: linear-gradient(135deg, #f8eef1 0%, #efe4e8 100%);
+  background: linear-gradient(135deg, #f8fafc 0%, #eef4ff 100%);
+}
+
+.img-placeholder {
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
 }
 
 .body {
@@ -39,8 +53,8 @@
   width: fit-content;
   border-radius: 999px;
   padding: 0.3rem 0.65rem;
-  background: #fae9ee;
-  color: #8c1b35;
+  background: #eef4ff;
+  color: #1f4fd6;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -58,17 +72,17 @@
   margin: 0;
   font-family: var(--font-display);
   font-size: 1.42rem;
-  color: #531324;
+  color: #0f172a;
 }
 
 .price {
   font-weight: 700;
-  color: #b21e3d;
+  color: #1f4fd6;
 }
 
 .meta {
   margin: 0;
-  color: #5f5147;
+  color: #475569;
   font-size: 0.9rem;
 }
 
@@ -76,12 +90,12 @@
   margin: 0;
   font-size: 0.94rem;
   line-height: 1.55;
-  color: #42362f;
+  color: #334155;
 }
 
 .season {
   margin: 0;
-  color: #6a5a50;
+  color: #64748b;
   font-size: 0.84rem;
 }
 
@@ -89,11 +103,11 @@
   margin: 0;
   font-size: 0.82rem;
   font-weight: 600;
-  color: #8c1b35;
+  color: #0f172a;
 }
 
 .stock-out {
-  color: #b10f31;
+  color: #64748b;
 }
 
 .actions {
@@ -112,21 +126,21 @@
 }
 
 .fav-btn {
-  border: 1px solid #dca2b1;
-  background: #fff4f7;
-  color: #8c1b35;
+  border: 1px solid #cfd8e6;
+  background: #f8fbff;
+  color: #1f4fd6;
 }
 
 .fav-btn.active {
-  border-color: #9f1634;
-  background: #9f1634;
+  border-color: #1f4fd6;
+  background: #1f4fd6;
   color: #fff;
 }
 
 .ghost-btn {
-  border: 1px solid #e2c2cb;
+  border: 1px solid #cfd8e6;
   background: #fff;
-  color: #672234;
+  color: #0f172a;
 }
 
 .add-btn {
@@ -134,14 +148,14 @@
   border: 0;
   border-radius: 10px;
   padding: 0.6rem 0.75rem;
-  background: linear-gradient(100deg, #9f1634 0%, #cf3556 100%);
+  background: linear-gradient(100deg, #1f4fd6 0%, #334155 100%);
   color: #fff;
   font-weight: 700;
   cursor: pointer;
 }
 
 .add-btn:disabled {
-  background: #e3d8dc;
-  color: #5f6562;
+  background: #e2e8f0;
+  color: #64748b;
   cursor: not-allowed;
 }

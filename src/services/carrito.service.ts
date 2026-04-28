@@ -8,7 +8,7 @@ export interface CartLine {
 
 @Injectable({ providedIn: 'root' })
 export class CarritoService {
-  private readonly cartStorageKey = 'casa-quetzal-cart-v1';
+  private readonly cartStorageKey = 'poke-market-cart-v1';
   private readonly lineasSignal = signal<CartLine[]>(this.readStoredCart());
 
   readonly lineas = this.lineasSignal.asReadonly();
@@ -87,7 +87,7 @@ export class CarritoService {
     xml += '<ticket>\n';
     xml += `  <folio>${ticketId}</folio>\n`;
     xml += `  <fecha>${now.toISOString()}</fecha>\n`;
-    xml += '  <restaurante>Casa Quetzal</restaurante>\n';
+    xml += '  <tienda>Poke Bazar MX</tienda>\n';
     xml += '  <lineas>\n';
 
     for (const line of this.lineasSignal()) {
@@ -182,7 +182,6 @@ export class CarritoService {
       typeof item.id === 'number' &&
       typeof item.name === 'string' &&
       typeof item.price === 'number' &&
-      typeof item.imageUrl === 'string' &&
       typeof item.category === 'string' &&
       typeof item.description === 'string' &&
       typeof item.inStock === 'boolean' &&

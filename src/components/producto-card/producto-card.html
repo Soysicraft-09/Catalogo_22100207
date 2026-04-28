@@ -1,11 +1,16 @@
 <article class="card">
-  <img
-    class="img"
-    [ngSrc]="item().imageUrl"
-    [alt]="item().name"
-    width="320"
-    height="260"
-  />
+  @if (item().imageUrl) {
+    <img
+      class="img"
+      [src]="item().imageUrl"
+      [alt]="item().name"
+      width="320"
+      height="260"
+      loading="lazy"
+    />
+  } @else {
+    <div class="img img-placeholder" aria-hidden="true">Sin imagen</div>
+  }
 
   <div class="body">
     <div class="meta-row">
@@ -31,8 +36,8 @@
     </div>
 
     <p class="desc">{{ item().description }}</p>
-    <p class="meta">Maridaje: {{ item().pairing }}</p>
-    <p class="season">{{ item().season }}</p>
+    <p class="meta">Rareza: {{ item().pairing }}</p>
+    <p class="season">Condicion: {{ item().season }}</p>
 
     <p class="stock" [class.stock-out]="!item().inStock">{{ availabilityText() }}</p>
 
